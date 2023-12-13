@@ -23,6 +23,11 @@ func main() {
 	if !exists {
 		PORT = "8080"
 	}
+	MACHINE, exists := os.LookupEnv("K_REVISION")
+	if !exists {
+		MACHINE = "LOCAL"
+	}
+	log.SetPrefix(fmt.Sprintf("[%v] ", MACHINE))
 	log.Printf("Read PORT env, will be listening at %v", PORT)
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%v", PORT))
 	if err != nil {
