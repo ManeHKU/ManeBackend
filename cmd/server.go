@@ -36,14 +36,37 @@ func (s *Service) GetUpdatedURLs(ctx context.Context, request *pb.GetUpdatedURLs
 	}, nil
 }
 
+type HealthCheck struct {
+	pb.UnimplementedHealthServer
+}
+
+func (s *HealthCheck) Check(_ context.Context, request *pb.HealthCheckRequest) (*pb.HealthCheckResponse, error) {
+	log.Printf("Recevied healthcheck request %v", request.GetService())
+	return &pb.HealthCheckResponse{
+		Status: pb.HealthCheckResponse_SERVING,
+	}, nil
+}
+
+func (s *HealthCheck) Watch(request *pb.HealthCheckRequest, stream pb.Health_WatchServer) error {
+	err := stream.Send(&pb.HealthCheckResponse{
+		Status: pb.HealthCheckResponse_SERVING,
+	})
+	return err
+}
+
 func main() {
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%v", os.Getenv("PORT")))
+	PORT, exists := os.LookupEnv("PORT")
+	if !exists {
+		PORT = "8080"
+	}
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%v", PORT))
 	if err != nil {
 		panic(err)
 	}
 
 	s := grpc.NewServer()
 	pb.RegisterServiceServer(s, &Service{})
+	pb.RegisterHealthServer(s, &HealthCheck{})
 	// Register reflection service on gRPC server.
 	reflection.Register(s)
 	if err := s.Serve(listener); err != nil {
