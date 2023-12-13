@@ -3,11 +3,13 @@ package main
 import (
 	"ManeBackend/pb"
 	"context"
+	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"log"
 	"net"
+	"os"
 )
 
 type Service struct {
@@ -35,7 +37,7 @@ func (s *Service) GetUpdatedURLs(ctx context.Context, request *pb.GetUpdatedURLs
 }
 
 func main() {
-	listener, err := net.Listen("tcp", ":8080")
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%v", os.Getenv("PORT")))
 	if err != nil {
 		panic(err)
 	}
