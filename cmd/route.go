@@ -2,7 +2,7 @@ package main
 
 import (
 	"ManeBackend/pb"
-	"golang.org/x/net/context"
+	"context"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"log"
 )
@@ -32,7 +32,7 @@ func (s *Service) GetUpdatedURLs(_ context.Context, request *pb.GetUpdatedURLsRe
 	println(ts.String())
 	URLs := make(map[string]string)
 	URLs["home"] = "12312f.com"
-	LatestUrls := &pb.URLsList{
+	LatestUrls := &pb.GetUpdatedURLsResponse_URLsList{
 		VersionTimestamp: timestamppb.Now(),
 		URLs:             URLs,
 	}
