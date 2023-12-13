@@ -55,11 +55,11 @@ func (s *HealthCheck) Watch(_ *pb.HealthCheckRequest, stream pb.Health_WatchServ
 }
 
 func main() {
-	log.Print("Started main")
 	PORT, exists := os.LookupEnv("PORT")
 	if !exists {
 		PORT = "8080"
 	}
+	log.Printf("Started main, will be listening at %v", PORT)
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%v", PORT))
 	if err != nil {
 		panic(err)
