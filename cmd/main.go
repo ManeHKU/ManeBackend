@@ -16,7 +16,7 @@ type Service struct {
 	pb.UnimplementedServiceServer
 }
 
-func (s *Service) GetUpdatedURLs(ctx context.Context, request *pb.GetUpdatedURLsRequest) (*pb.GetUpdatedURLsResponse, error) {
+func (s *Service) GetUpdatedURLs(_ context.Context, request *pb.GetUpdatedURLsRequest) (*pb.GetUpdatedURLsResponse, error) {
 	if request.GetVersionTimestamp() == nil {
 		return &pb.GetUpdatedURLsResponse{
 			LatestURLs: nil,
@@ -47,7 +47,7 @@ func (s *HealthCheck) Check(_ context.Context, request *pb.HealthCheckRequest) (
 	}, nil
 }
 
-func (s *HealthCheck) Watch(request *pb.HealthCheckRequest, stream pb.Health_WatchServer) error {
+func (s *HealthCheck) Watch(_ *pb.HealthCheckRequest, stream pb.Health_WatchServer) error {
 	err := stream.Send(&pb.HealthCheckResponse{
 		Status: pb.HealthCheckResponse_SERVING,
 	})
@@ -55,6 +55,7 @@ func (s *HealthCheck) Watch(request *pb.HealthCheckRequest, stream pb.Health_Wat
 }
 
 func main() {
+	log.Print("Started main")
 	PORT, exists := os.LookupEnv("PORT")
 	if !exists {
 		PORT = "8080"
