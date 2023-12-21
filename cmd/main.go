@@ -1,6 +1,7 @@
 package main
 
 import (
+	"ManeBackend/internal"
 	"ManeBackend/pb"
 	"context"
 	"fmt"
@@ -9,7 +10,6 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"log"
 	"net"
-	"os"
 )
 
 type Service struct {
@@ -55,17 +55,9 @@ func (s *Service) GetUpdatedURLs(_ context.Context, request *pb.GetUpdatedURLsRe
 }
 
 func main() {
-	PORT, exists := os.LookupEnv("PORT")
-	if !exists {
-		PORT = "8080"
-	}
-	MACHINE, exists := os.LookupEnv("K_REVISION")
-	if !exists {
-		MACHINE = "LOCAL"
-	}
-	log.SetPrefix(fmt.Sprintf("[%v] ", MACHINE))
-	log.Printf("Read PORT env, will be listening at %v", PORT)
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%v", PORT))
+	config := internal.LoadEnv()
+
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%v", config.PORT))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -78,4 +70,7 @@ func main() {
 	if err := s.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
+
+	log.Printf("Server started on port %v", config.PORT)
+	defer s.Stop()
 }
