@@ -19,41 +19,41 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Health_Check_FullMethodName = "/grpc.health.v1.Health/Check"
-	Health_Watch_FullMethodName = "/grpc.health.v1.Health/Watch"
+	HealthCheck_Check_FullMethodName = "/grpc.health.v1.HealthCheck/Check"
+	HealthCheck_Watch_FullMethodName = "/grpc.health.v1.HealthCheck/Watch"
 )
 
-// HealthClient is the client API for Health service.
+// HealthCheckClient is the client API for HealthCheck service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type HealthClient interface {
+type HealthCheckClient interface {
 	Check(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error)
-	Watch(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (Health_WatchClient, error)
+	Watch(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (HealthCheck_WatchClient, error)
 }
 
-type healthClient struct {
+type healthCheckClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewHealthClient(cc grpc.ClientConnInterface) HealthClient {
-	return &healthClient{cc}
+func NewHealthCheckClient(cc grpc.ClientConnInterface) HealthCheckClient {
+	return &healthCheckClient{cc}
 }
 
-func (c *healthClient) Check(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error) {
+func (c *healthCheckClient) Check(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error) {
 	out := new(HealthCheckResponse)
-	err := c.cc.Invoke(ctx, Health_Check_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, HealthCheck_Check_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *healthClient) Watch(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (Health_WatchClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Health_ServiceDesc.Streams[0], Health_Watch_FullMethodName, opts...)
+func (c *healthCheckClient) Watch(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (HealthCheck_WatchClient, error) {
+	stream, err := c.cc.NewStream(ctx, &HealthCheck_ServiceDesc.Streams[0], HealthCheck_Watch_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &healthWatchClient{stream}
+	x := &healthCheckWatchClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -63,16 +63,16 @@ func (c *healthClient) Watch(ctx context.Context, in *HealthCheckRequest, opts .
 	return x, nil
 }
 
-type Health_WatchClient interface {
+type HealthCheck_WatchClient interface {
 	Recv() (*HealthCheckResponse, error)
 	grpc.ClientStream
 }
 
-type healthWatchClient struct {
+type healthCheckWatchClient struct {
 	grpc.ClientStream
 }
 
-func (x *healthWatchClient) Recv() (*HealthCheckResponse, error) {
+func (x *healthCheckWatchClient) Recv() (*HealthCheckResponse, error) {
 	m := new(HealthCheckResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -80,93 +80,93 @@ func (x *healthWatchClient) Recv() (*HealthCheckResponse, error) {
 	return m, nil
 }
 
-// HealthServer is the server API for Health service.
-// All implementations must embed UnimplementedHealthServer
+// HealthCheckServer is the server API for HealthCheck service.
+// All implementations must embed UnimplementedHealthCheckServer
 // for forward compatibility
-type HealthServer interface {
+type HealthCheckServer interface {
 	Check(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error)
-	Watch(*HealthCheckRequest, Health_WatchServer) error
-	mustEmbedUnimplementedHealthServer()
+	Watch(*HealthCheckRequest, HealthCheck_WatchServer) error
+	mustEmbedUnimplementedHealthCheckServer()
 }
 
-// UnimplementedHealthServer must be embedded to have forward compatible implementations.
-type UnimplementedHealthServer struct {
+// UnimplementedHealthCheckServer must be embedded to have forward compatible implementations.
+type UnimplementedHealthCheckServer struct {
 }
 
-func (UnimplementedHealthServer) Check(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error) {
+func (UnimplementedHealthCheckServer) Check(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Check not implemented")
 }
-func (UnimplementedHealthServer) Watch(*HealthCheckRequest, Health_WatchServer) error {
+func (UnimplementedHealthCheckServer) Watch(*HealthCheckRequest, HealthCheck_WatchServer) error {
 	return status.Errorf(codes.Unimplemented, "method Watch not implemented")
 }
-func (UnimplementedHealthServer) mustEmbedUnimplementedHealthServer() {}
+func (UnimplementedHealthCheckServer) mustEmbedUnimplementedHealthCheckServer() {}
 
-// UnsafeHealthServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to HealthServer will
+// UnsafeHealthCheckServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to HealthCheckServer will
 // result in compilation errors.
-type UnsafeHealthServer interface {
-	mustEmbedUnimplementedHealthServer()
+type UnsafeHealthCheckServer interface {
+	mustEmbedUnimplementedHealthCheckServer()
 }
 
-func RegisterHealthServer(s grpc.ServiceRegistrar, srv HealthServer) {
-	s.RegisterService(&Health_ServiceDesc, srv)
+func RegisterHealthCheckServer(s grpc.ServiceRegistrar, srv HealthCheckServer) {
+	s.RegisterService(&HealthCheck_ServiceDesc, srv)
 }
 
-func _Health_Check_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _HealthCheck_Check_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(HealthCheckRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HealthServer).Check(ctx, in)
+		return srv.(HealthCheckServer).Check(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Health_Check_FullMethodName,
+		FullMethod: HealthCheck_Check_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HealthServer).Check(ctx, req.(*HealthCheckRequest))
+		return srv.(HealthCheckServer).Check(ctx, req.(*HealthCheckRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Health_Watch_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _HealthCheck_Watch_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(HealthCheckRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(HealthServer).Watch(m, &healthWatchServer{stream})
+	return srv.(HealthCheckServer).Watch(m, &healthCheckWatchServer{stream})
 }
 
-type Health_WatchServer interface {
+type HealthCheck_WatchServer interface {
 	Send(*HealthCheckResponse) error
 	grpc.ServerStream
 }
 
-type healthWatchServer struct {
+type healthCheckWatchServer struct {
 	grpc.ServerStream
 }
 
-func (x *healthWatchServer) Send(m *HealthCheckResponse) error {
+func (x *healthCheckWatchServer) Send(m *HealthCheckResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-// Health_ServiceDesc is the grpc.ServiceDesc for Health service.
+// HealthCheck_ServiceDesc is the grpc.ServiceDesc for HealthCheck service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Health_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "grpc.health.v1.Health",
-	HandlerType: (*HealthServer)(nil),
+var HealthCheck_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "grpc.health.v1.HealthCheck",
+	HandlerType: (*HealthCheckServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "Check",
-			Handler:    _Health_Check_Handler,
+			Handler:    _HealthCheck_Check_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "Watch",
-			Handler:       _Health_Watch_Handler,
+			Handler:       _HealthCheck_Watch_Handler,
 			ServerStreams: true,
 		},
 	},
