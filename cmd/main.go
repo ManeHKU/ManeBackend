@@ -1,7 +1,7 @@
 package main
 
 import (
-	"ManeBackend/internal"
+	"ManeBackend/internal/env"
 	"ManeBackend/pb"
 	"context"
 	"fmt"
@@ -12,12 +12,12 @@ import (
 	"net"
 )
 
-type Service struct {
-	pb.UnimplementedServiceServer
+type MainService struct {
+	pb.UnimplementedMainServiceServer
 }
 
 type HealthCheck struct {
-	pb.UnimplementedHealthServer
+	pb.UnimplementedHealthCheckServer
 }
 
 func (s *HealthCheck) Check(_ context.Context, request *pb.HealthCheckRequest) (*pb.HealthCheckResponse, error) {
@@ -27,14 +27,14 @@ func (s *HealthCheck) Check(_ context.Context, request *pb.HealthCheckRequest) (
 	}, nil
 }
 
-func (s *HealthCheck) Watch(_ *pb.HealthCheckRequest, stream pb.Health_WatchServer) error {
+func (s *HealthCheck) Watch(_ *pb.HealthCheckRequest, stream pb.HealthCheck_WatchServer) error {
 	err := stream.Send(&pb.HealthCheckResponse{
 		Status: pb.HealthCheckResponse_SERVING,
 	})
 	return err
 }
 
-func (s *Service) GetUpdatedURLs(_ context.Context, request *pb.GetUpdatedURLsRequest) (*pb.GetUpdatedURLsResponse, error) {
+func (s *MainService) GetUpdatedURLs(_ context.Context, request *pb.GetUpdatedURLsRequest) (*pb.GetUpdatedURLsResponse, error) {
 	if request.GetVersionTimestamp() == nil {
 		return &pb.GetUpdatedURLsResponse{
 			LatestURLs: nil,
@@ -55,15 +55,15 @@ func (s *Service) GetUpdatedURLs(_ context.Context, request *pb.GetUpdatedURLsRe
 }
 
 func main() {
-	config := internal.LoadEnv()
+	config := env.LoadEnv()
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%v", config.PORT))
 	if err != nil {
 		log.Fatal(err)
 	}
 	s := grpc.NewServer()
-	pb.RegisterServiceServer(s, &Service{})
-	pb.RegisterHealthServer(s, &HealthCheck{})
+	pb.RegisterMainServiceServer(s, &MainService{})
+	pb.RegisterHealthCheckServer(s, &HealthCheck{})
 
 	// Register reflection service on gRPC server.
 	reflection.Register(s)
