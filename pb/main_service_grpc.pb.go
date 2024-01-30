@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,7 +20,8 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	MainService_GetUpdatedURLs_FullMethodName = "/MainService/GetUpdatedURLs"
+	MainService_GetUpdatedURLs_FullMethodName = "/service.MainService/GetUpdatedURLs"
+	MainService_UpdateUserInfo_FullMethodName = "/service.MainService/UpdateUserInfo"
 )
 
 // MainServiceClient is the client API for MainService service.
@@ -27,6 +29,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MainServiceClient interface {
 	GetUpdatedURLs(ctx context.Context, in *GetUpdatedURLsRequest, opts ...grpc.CallOption) (*GetUpdatedURLsResponse, error)
+	UpdateUserInfo(ctx context.Context, in *UpdateUserInfoRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type mainServiceClient struct {
@@ -46,11 +49,21 @@ func (c *mainServiceClient) GetUpdatedURLs(ctx context.Context, in *GetUpdatedUR
 	return out, nil
 }
 
+func (c *mainServiceClient) UpdateUserInfo(ctx context.Context, in *UpdateUserInfoRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, MainService_UpdateUserInfo_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MainServiceServer is the server API for MainService service.
 // All implementations must embed UnimplementedMainServiceServer
 // for forward compatibility
 type MainServiceServer interface {
 	GetUpdatedURLs(context.Context, *GetUpdatedURLsRequest) (*GetUpdatedURLsResponse, error)
+	UpdateUserInfo(context.Context, *UpdateUserInfoRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedMainServiceServer()
 }
 
@@ -60,6 +73,9 @@ type UnimplementedMainServiceServer struct {
 
 func (UnimplementedMainServiceServer) GetUpdatedURLs(context.Context, *GetUpdatedURLsRequest) (*GetUpdatedURLsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUpdatedURLs not implemented")
+}
+func (UnimplementedMainServiceServer) UpdateUserInfo(context.Context, *UpdateUserInfoRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserInfo not implemented")
 }
 func (UnimplementedMainServiceServer) mustEmbedUnimplementedMainServiceServer() {}
 
@@ -92,16 +108,38 @@ func _MainService_GetUpdatedURLs_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MainService_UpdateUserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateUserInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MainServiceServer).UpdateUserInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MainService_UpdateUserInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MainServiceServer).UpdateUserInfo(ctx, req.(*UpdateUserInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MainService_ServiceDesc is the grpc.ServiceDesc for MainService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var MainService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "MainService",
+	ServiceName: "service.MainService",
 	HandlerType: (*MainServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "GetUpdatedURLs",
 			Handler:    _MainService_GetUpdatedURLs_Handler,
+		},
+		{
+			MethodName: "UpdateUserInfo",
+			Handler:    _MainService_UpdateUserInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	InitService_GetInitialConfig_FullMethodName = "/InitService/GetInitialConfig"
+	InitService_GetInitialConfig_FullMethodName = "/init.InitService/GetInitialConfig"
 )
 
 // InitServiceClient is the client API for InitService service.
@@ -96,7 +96,7 @@ func _InitService_GetInitialConfig_Handler(srv interface{}, ctx context.Context,
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var InitService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "InitService",
+	ServiceName: "init.InitService",
 	HandlerType: (*InitServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

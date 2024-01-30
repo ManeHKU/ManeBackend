@@ -2,11 +2,13 @@ package main
 
 import (
 	"ManeBackend/internal/env"
+	"ManeBackend/models"
 	"ManeBackend/pb"
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"log"
 	"net"
@@ -54,13 +56,23 @@ func (s *MainService) GetUpdatedURLs(_ context.Context, request *pb.GetUpdatedUR
 	}, nil
 }
 
+func (s *MainService) UpdateUserInfo(_ context.Context, request *pb.UpdateUserInfoRequest) (*emptypb.Empty, error) {
+	log.Print(models.GetAllUsers())
+	return &emptypb.Empty{}, nil
+}
+
 func main() {
 	config := env.LoadEnv()
+	err := models.InitDB(config)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%v", config.PORT))
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	s := grpc.NewServer()
 	pb.RegisterMainServiceServer(s, &MainService{})
 	pb.RegisterHealthCheckServer(s, &HealthCheck{})
@@ -73,4 +85,5 @@ func main() {
 
 	log.Printf("Server started on port %v", config.PORT)
 	defer s.Stop()
+	defer models.Close()
 }
