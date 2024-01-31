@@ -14,8 +14,9 @@ type Config struct {
 	JWT_SECRET    string `env:"JWT_SECRET"`
 }
 
-func LoadEnv() *Config {
-	config := &Config{}
+var config *Config
+
+func loadEnv() {
 	options := env.Options{RequiredIfNoDef: true}
 
 	if err := env.ParseWithOptions(config, options); err != nil {
@@ -24,5 +25,11 @@ func LoadEnv() *Config {
 
 	log.SetPrefix(fmt.Sprintf("[%v]\t", config.MACHINE_NAME))
 	log.Printf("Loaded all environment variables, PORT: %v", config.PORT)
+}
+
+func GetConfig() *Config {
+	if config == nil {
+		loadEnv()
+	}
 	return config
 }

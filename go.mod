@@ -4,6 +4,7 @@ go 1.21
 
 require (
 	github.com/caarlos0/env/v10 v10.0.0
+	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/jackc/pgx/v5 v5.5.2
 	google.golang.org/grpc v1.60.0
 	google.golang.org/protobuf v1.31.0

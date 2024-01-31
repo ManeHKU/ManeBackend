@@ -2,6 +2,7 @@ package main
 
 import (
 	"ManeBackend/internal/env"
+	"ManeBackend/internal/jwt"
 	"ManeBackend/models"
 	"ManeBackend/pb"
 	"context"
@@ -56,13 +57,23 @@ func (s *MainService) GetUpdatedURLs(_ context.Context, request *pb.GetUpdatedUR
 	}, nil
 }
 
-func (s *MainService) UpdateUserInfo(_ context.Context, request *pb.UpdateUserInfoRequest) (*emptypb.Empty, error) {
+func (s *MainService) UpdateUserInfo(context context.Context, request *pb.UpdateUserInfoRequest) (*emptypb.Empty, error) {
 	log.Print(models.GetAllUsers())
+	if request.GetUid() == 0 || request.GetFullName() == "" {
+		log.Printf("empty request not doing anything")
+		return &emptypb.Empty{}, nil
+	}
+	userUUID := jwt.GetUserID(context)
+	if userUUID == "" {
+		log.Printf("no user id in context")
+		return &emptypb.Empty{}, nil
+	}
+
 	return &emptypb.Empty{}, nil
 }
 
 func main() {
-	config := env.LoadEnv()
+	config := env.GetConfig()
 	err := models.InitDB(config)
 	if err != nil {
 		log.Fatal(err)
