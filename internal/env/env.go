@@ -14,7 +14,7 @@ type Config struct {
 	JWT_SECRET    string `env:"JWT_SECRET"`
 }
 
-var config *Config
+var config = &Config{}
 
 func loadEnv() {
 	options := env.Options{RequiredIfNoDef: true}
@@ -28,7 +28,7 @@ func loadEnv() {
 }
 
 func GetConfig() *Config {
-	if config == nil {
+	if *config == (Config{}) {
 		loadEnv()
 	}
 	return config

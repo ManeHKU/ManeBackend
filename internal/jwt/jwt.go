@@ -1,42 +1,32 @@
 package jwt
 
 import (
-	"ManeBackend/internal/env"
-	"context"
+	"errors"
 	"github.com/golang-jwt/jwt/v5"
-	"google.golang.org/grpc/metadata"
 )
 
-var keyFunc jwt.Keyfunc = func(token *jwt.Token) (interface{}, error) {
-	config := env.GetConfig()
-	return []byte(config.JWT_SECRET), nil
+type Manager struct {
+	secretKey string
 }
 
-func GetUserID(ctx context.Context) string {
-	claims, exist := GetJWTClaims(ctx)
-	if !exist {
-		return ""
-	}
-	subject, _ := claims.GetSubject()
-	return subject
+type UserClaims struct {
+	jwt.RegisteredClaims
+	Role string `json:"role"`
 }
 
-func GetJWTClaims(ctx context.Context) (*jwt.MapClaims, bool) {
-	metadataMap, exist := metadata.FromIncomingContext(ctx)
-	if !exist {
-		return nil, false
-	}
-	authorizationKeys := metadataMap.Get("authorization")
-	if len(authorizationKeys) != 1 {
-		return nil, false
-	}
-	tokenString := authorizationKeys[0]
-	token, _ := jwt.ParseWithClaims(tokenString, &jwt.MapClaims{}, keyFunc)
+func NewJWTManager(secretKey string) *Manager {
+	return &Manager{secretKey}
+}
 
-	if token != nil {
-		if claims, ok := token.Claims.(*jwt.MapClaims); ok && token.Valid {
-			return claims, true
-		}
+func (manager *Manager) VerifyUserToken(tokenString string) (*UserClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &UserClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(manager.secretKey), nil
+	})
+	if err != nil {
+		return nil, err
+	} else if claims, ok := token.Claims.(*UserClaims); ok {
+		return claims, nil
 	}
-	return nil, false
+
+	return nil, errors.New("claim failed")
 }
