@@ -10,7 +10,7 @@ type Config struct {
 	PORT          uint   `env:"PORT" envDefault:"8080"`
 	MACHINE_NAME  string `env:"K_REVISION" envDefault:"LOCAL"`
 	DATABASE_URI  string `env:"DB_URI"`
-	DATABASE_CERT string `env:"DB_CERT"`
+	DATABASE_CERT string `env:"DB_CERT" envDefault:""`
 	JWT_SECRET    string `env:"JWT_SECRET"`
 }
 
