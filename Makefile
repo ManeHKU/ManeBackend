@@ -6,3 +6,5 @@ gen-proto:
 run:
 	echo "Running gRPC"
 	go run ./cmd/main.go
+ngrok:
+	ngrok tcp 8080
