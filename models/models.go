@@ -83,6 +83,35 @@ func UpdateUserInfo(uuid string, uid uint32, fullName string) error {
 	return nil
 }
 
+func UpsertCourseCodes(uuid string, courseCodes []string) error {
+	log.Printf("start upsert course codes")
+	ctx := context.Background()
+	tx, err := dbPool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func(tx pgx.Tx, ctx context.Context) {
+		rollBackErr := tx.Rollback(ctx)
+		if rollBackErr != nil {
+			err = rollBackErr
+		}
+	}(tx, ctx)
+
+	for _, code := range courseCodes {
+		_, err = dbPool.Exec(ctx, "INSERT into class_enrolment(user_id, course_code) select $1, $2 WHERE NOT EXISTS (SELECT 1 FROM class_enrolment WHERE user_id = $1 and course_code = $2);", uuid, code)
+		if err != nil {
+			log.Printf("error for %v: %v", code, err)
+			return err
+		}
+	}
+	err = tx.Commit(ctx)
+	log.Printf("comitted")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func Close() {
 	defer dbPool.Close()
 }

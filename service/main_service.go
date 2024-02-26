@@ -64,6 +64,32 @@ func (s *MainService) UpdateUserInfo(context context.Context, request *pb.Update
 	return &emptypb.Empty{}, nil
 }
 
+func (s *MainService) UpsertTakenCourses(context context.Context, request *pb.UpsertTakenCoursesRequest) (*emptypb.Empty, error) {
+	log.Printf("Received UpsertTakenCoursesRequest")
+	courseCodes := request.GetTakenCourseCodes()
+	if courseCodes == nil || len(courseCodes) == 0 {
+		log.Printf("empty course codes")
+		return nil, status.Errorf(codes.InvalidArgument, "empty request")
+	}
+	jwtClaims := context.Value(constants.JWTClaimsKey).(*jwt.UserClaims)
+	userUUID := jwtClaims.Subject
+	if userUUID == "" {
+		log.Printf("empty uuid or error")
+		return &emptypb.Empty{}, nil
+	}
+
+	log.Printf("current user id: %v", userUUID)
+
+	if err := models.UpsertCourseCodes(userUUID, courseCodes); err != nil {
+		log.Printf("error during upsert course codes: %v", err)
+		return nil, status.Errorf(codes.Aborted, err.Error())
+	}
+
+	log.Printf("no failure during txn, good result")
+
+	return &emptypb.Empty{}, nil
+}
+
 func NewMainService(jwtManager *jwt.Manager) *MainService {
 	return &MainService{jwtManager: jwtManager}
 }

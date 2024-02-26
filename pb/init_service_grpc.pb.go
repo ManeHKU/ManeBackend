@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	InitService_GetInitialConfig_FullMethodName = "/init.InitService/GetInitialConfig"
+	InitService_GetSISTicket_FullMethodName     = "/init.InitService/GetSISTicket"
 )
 
 // InitServiceClient is the client API for InitService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type InitServiceClient interface {
 	GetInitialConfig(ctx context.Context, in *GetInitialConfigRequest, opts ...grpc.CallOption) (*GetInitialConfigResponse, error)
+	GetSISTicket(ctx context.Context, in *UserSignInRequest, opts ...grpc.CallOption) (*UserSignInResponse, error)
 }
 
 type initServiceClient struct {
@@ -46,11 +48,21 @@ func (c *initServiceClient) GetInitialConfig(ctx context.Context, in *GetInitial
 	return out, nil
 }
 
+func (c *initServiceClient) GetSISTicket(ctx context.Context, in *UserSignInRequest, opts ...grpc.CallOption) (*UserSignInResponse, error) {
+	out := new(UserSignInResponse)
+	err := c.cc.Invoke(ctx, InitService_GetSISTicket_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // InitServiceServer is the server API for InitService service.
 // All implementations must embed UnimplementedInitServiceServer
 // for forward compatibility
 type InitServiceServer interface {
 	GetInitialConfig(context.Context, *GetInitialConfigRequest) (*GetInitialConfigResponse, error)
+	GetSISTicket(context.Context, *UserSignInRequest) (*UserSignInResponse, error)
 	mustEmbedUnimplementedInitServiceServer()
 }
 
@@ -60,6 +72,9 @@ type UnimplementedInitServiceServer struct {
 
 func (UnimplementedInitServiceServer) GetInitialConfig(context.Context, *GetInitialConfigRequest) (*GetInitialConfigResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInitialConfig not implemented")
+}
+func (UnimplementedInitServiceServer) GetSISTicket(context.Context, *UserSignInRequest) (*UserSignInResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSISTicket not implemented")
 }
 func (UnimplementedInitServiceServer) mustEmbedUnimplementedInitServiceServer() {}
 
@@ -92,6 +107,24 @@ func _InitService_GetInitialConfig_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _InitService_GetSISTicket_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserSignInRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InitServiceServer).GetSISTicket(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InitService_GetSISTicket_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InitServiceServer).GetSISTicket(ctx, req.(*UserSignInRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // InitService_ServiceDesc is the grpc.ServiceDesc for InitService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -102,6 +135,10 @@ var InitService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetInitialConfig",
 			Handler:    _InitService_GetInitialConfig_Handler,
+		},
+		{
+			MethodName: "GetSISTicket",
+			Handler:    _InitService_GetSISTicket_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
