@@ -44,7 +44,7 @@ func main() {
 
 	jwtManager := jwt.NewJWTManager(config.JWT_SECRET)
 
-	launch := launcher.New().Leakless(false).Bin("/usr/bin/chromium").MustLaunch()
+	launch := launcher.New().Leakless(false).Bin("/usr/bin/chromium").Set("no-sandbox", "true").MustLaunch()
 	//launch := launcher.New().Headless(false).Devtools(true).Leakless(false).Bin("/opt/homebrew/bin/chromium").MustLaunch()
 	browser := rod.New().ControlURL(launch).MustConnect()
 	log.Print("Launched and connected to browser")
