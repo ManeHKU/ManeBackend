@@ -118,7 +118,7 @@ func (s *InitService) GetSISTicket(_ context.Context, request *pb.UserSignInRequ
 	ticketUrlChannel := make(chan string)
 	router := page.HijackRequests()
 	defer router.MustStop()
-	router.MustAdd("*sis-eportal.hku.hk/ptlprod/z_signon.jsp*", func(ctx *rod.Hijack) {
+	router.MustAdd("*sis-eportal.hku.hk/ptlprod/z_signon.jsp?ticket*", func(ctx *rod.Hijack) {
 		ticketUrl := ctx.Request.URL().String()
 		log.Printf("Got full ticket url: %v", ctx.Request.URL())
 		ctx.Response.Fail(proto.NetworkErrorReasonBlockedByClient)
@@ -138,7 +138,7 @@ func (s *InitService) GetSISTicket(_ context.Context, request *pb.UserSignInRequ
 	select {
 	case url := <-ticketUrlChannel:
 		ticketUrl = url
-	case <-time.After(2 * time.Second):
+	case <-time.After(3 * time.Second):
 		log.Printf("Timeout waiting for ticket url")
 		response := &pb.UserSignInResponse{
 			CanLogInToSIS: false,
