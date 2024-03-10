@@ -4,6 +4,7 @@ import (
 	"ManeBackend/internal/env"
 	"context"
 	"errors"
+	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
@@ -97,17 +98,22 @@ func UpsertCourseCodes(uuid string, courseCodes []string) error {
 		}
 	}(tx, ctx)
 
+	upsertErrors := make([]error, 0)
 	for _, code := range courseCodes {
 		_, err = dbPool.Exec(ctx, "INSERT into class_enrolment(user_id, course_code) select $1, $2 WHERE NOT EXISTS (SELECT 1 FROM class_enrolment WHERE user_id = $1 and course_code = $2);", uuid, code)
 		if err != nil {
 			log.Printf("error for %v: %v", code, err)
-			return err
+			upsertErrors = append(upsertErrors, err)
 		}
 	}
 	err = tx.Commit(ctx)
-	log.Printf("comitted")
 	if err != nil {
 		return err
+	}
+	log.Printf("comitted")
+	if len(upsertErrors) > 0 {
+		errorText := fmt.Sprintf("upsert errors: %v", upsertErrors)
+		return errors.New(errorText)
 	}
 	return nil
 }
