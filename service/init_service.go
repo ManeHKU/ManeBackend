@@ -101,10 +101,24 @@ func (s *InitService) GetSISTicket(_ context.Context, request *pb.UserSignInRequ
 	}
 	log.Printf("Entered password")
 
-	loginResult, err := page.Timeout(2*time.Second).Race().ElementR("#errorText", "Incorrect user ID or password.").Element("input[value='Yes']").Do()
+	loginResult, err := page.Timeout(2*time.Second).Race().ElementR("#errorText", "Incorrect user ID or password.").Element("input[value='Yes']").Element("input[value='Continue']").Do()
 	if err != nil {
 		log.Printf("Error finding login result: %v", err)
 		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	if result, _ := loginResult.Matches("input[value='Continue']"); result {
+		log.Printf("Trust connect or not?")
+		loginResult.MustClick()
+
+		loginResult, _ = page.Element("input[value='Yes']")
+		if loginResult == nil {
+			log.Printf("Failed to trust website")
+			response := &pb.UserSignInResponse{
+				CanLogInToSIS: false,
+			}
+			return response, nil
+		}
 	}
 
 	if result, _ := loginResult.Matches("input[value='Yes']"); !result {
