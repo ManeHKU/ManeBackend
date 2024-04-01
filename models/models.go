@@ -2,6 +2,7 @@ package models
 
 import (
 	"ManeBackend/internal/env"
+	"ManeBackend/models/types"
 	"context"
 	"errors"
 	"fmt"
@@ -116,6 +117,69 @@ func UpsertCourseCodes(uuid string, courseCodes []string) error {
 		return errors.New(errorText)
 	}
 	return nil
+}
+
+func GetCourses(pageSize int32, lastCourseCode string) ([]types.Course, error) {
+	if pageSize <= 0 {
+		return nil, errors.New("invalid page size")
+	}
+	var rows pgx.Rows
+	var err error
+	if lastCourseCode == "" {
+		rows, err = dbPool.Query(context.Background(), "select course_code, title, department, description, rating, offered from courses_info order by course_code limit $1", pageSize)
+		if err != nil {
+			log.Printf("error: %v", err)
+			return nil, err
+		}
+	} else {
+		rows, err = dbPool.Query(context.Background(), "select course_code, title, department, description, rating, offered from courses_info where course_code > $1 order by course_code limit $2", lastCourseCode, pageSize)
+		if err != nil {
+			log.Printf("error: %v", err)
+			return nil, err
+		}
+	}
+	courses, err := pgx.CollectRows(rows, pgx.RowToStructByName[types.Course])
+	if err != nil {
+		log.Printf("error when collecting row: %v", err)
+		return nil, err
+	}
+
+	return courses, nil
+}
+
+func SearchCourses(query string, pageSize int32, lastCourseCode string) ([]types.Course, error) {
+	if pageSize < 0 {
+		return nil, errors.New("invalid page size")
+	}
+	var rows pgx.Rows
+	var err error
+	if pageSize == 0 && lastCourseCode == "" {
+		rows, err = dbPool.Query(context.Background(), "select course_code, title, department, description, rating, offered from courses_info where course_code ilike '%' || $1 || '%' or description ilike '%' || $1 || '%' or title ilike '%' || $1 || '%' order by course_code", query)
+	} else if pageSize != 0 && lastCourseCode != "" {
+		rows, err = dbPool.Query(context.Background(), "select course_code, title, department, description, rating, offered from courses_info where (course_code ilike '%' || $1 || '%' or description ilike '%' || $1 || '%' or title ilike '%' || $1 || '%') and course_code > $2 order by course_code limit $3", query, lastCourseCode, pageSize)
+	} else if pageSize != 0 {
+		rows, err = dbPool.Query(context.Background(), "select course_code, title, department, description, rating, offered from courses_info where (course_code ilike '%' || $1 || '%' or description ilike '%' || $1 || '%' or title ilike '%' || $1 || '%') order by course_code limit $2", query, pageSize)
+	}
+	if err != nil {
+		log.Printf("error: %v", err)
+		return nil, err
+	}
+	courses, err := pgx.CollectRows(rows, pgx.RowToStructByName[types.Course])
+	if err != nil {
+		log.Printf("error when collecting row: %v", err)
+		return nil, err
+	}
+	return courses, nil
+}
+
+func GetCourseByCode(courseCode string) (*types.Course, error) {
+	row, err := dbPool.Query(context.Background(), "select course_code, title, department, description, rating, offered from courses_info where course_code = $1", courseCode)
+	course, err := pgx.CollectOneRow(row, pgx.RowToStructByName[types.Course])
+	if err != nil {
+		log.Printf("error when collecting row: %v", err)
+		return nil, err
+	}
+	return &course, nil
 }
 
 func Close() {

@@ -6,6 +6,8 @@ import (
 	"ManeBackend/models"
 	"ManeBackend/pb"
 	"context"
+	"errors"
+	"github.com/jackc/pgx/v5"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -88,6 +90,140 @@ func (s *MainService) UpsertTakenCourses(context context.Context, request *pb.Up
 	log.Printf("no failure during txn, good result")
 
 	return &emptypb.Empty{}, nil
+}
+
+func (s *MainService) ListCourses(_ context.Context, request *pb.ListCoursesRequest) (*pb.CoursesResponse, error) {
+	log.Printf("Received ListCoursesRequest")
+	pageSize := request.GetPageSize()
+	if pageSize < 0 {
+		log.Printf("invalid page size")
+		return nil, status.Errorf(codes.InvalidArgument, "invalid page size")
+	} else if pageSize == 0 {
+		// Set to default page size
+		pageSize = 20
+	}
+	// Add one more page size to check if there are more courses
+	newPageSize := pageSize + 1
+	lastCourseCode := request.GetLastCode()
+	courses, err := models.GetCourses(newPageSize, lastCourseCode)
+	if err != nil {
+		log.Printf("error during get courses: %v", err)
+		return nil, status.Errorf(codes.Aborted, err.Error())
+	}
+	if len(courses) == 0 {
+		return &pb.CoursesResponse{
+			Courses:     nil,
+			MoreResults: false,
+		}, nil
+	}
+
+	moreResults := false
+	var outputLength int
+	if len(courses) != int(newPageSize) {
+		outputLength = len(courses)
+	} else {
+		outputLength = len(courses) - 1
+		moreResults = true
+	}
+
+	data := make([]*pb.Course, outputLength)
+	for i := range data {
+		if courses[i].Description == nil {
+			courses[i].Description = new(string)
+		}
+		data[i] = &pb.Course{
+			CourseCode:  courses[i].CourseCode,
+			Title:       courses[i].Title,
+			Department:  courses[i].Department,
+			Description: *courses[i].Description,
+			Rating:      courses[i].Rating,
+			Offered:     courses[i].Offered,
+		}
+	}
+
+	return &pb.CoursesResponse{
+		Courses:     data,
+		MoreResults: moreResults,
+	}, nil
+}
+
+func (s *MainService) SearchCourses(_ context.Context, request *pb.SearchCourseRequest) (*pb.CoursesResponse, error) {
+	log.Printf("Received ListCoursesRequest")
+	if request.GetQuery() == "" {
+		log.Printf("empty query")
+		return nil, status.Errorf(codes.InvalidArgument, "empty query")
+	}
+	pageSize := request.GetPageSize()
+	if pageSize < 0 {
+		log.Printf("invalid page size")
+		return nil, status.Errorf(codes.InvalidArgument, "invalid page size")
+	}
+	newPageSize := pageSize + 1
+
+	lastCourseCode := request.GetLastCode()
+	query := request.GetQuery()
+	courses, err := models.SearchCourses(query, newPageSize, lastCourseCode)
+	if err != nil {
+		log.Printf("error during get courses: %v", err)
+		return nil, status.Errorf(codes.Aborted, err.Error())
+	}
+
+	var outputLength int
+	var moreResults bool
+	if len(courses) != int(newPageSize) {
+		outputLength = len(courses)
+		moreResults = false
+	} else {
+		outputLength = len(courses) - 1
+		moreResults = true
+	}
+	data := make([]*pb.Course, outputLength)
+	for i := range data {
+		if courses[i].Description == nil {
+			courses[i].Description = new(string)
+		}
+		data[i] = &pb.Course{
+			CourseCode:  courses[i].CourseCode,
+			Title:       courses[i].Title,
+			Department:  courses[i].Department,
+			Description: *courses[i].Description,
+			Rating:      courses[i].Rating,
+			Offered:     courses[i].Offered,
+		}
+	}
+
+	return &pb.CoursesResponse{
+		Courses:     data,
+		MoreResults: moreResults,
+	}, nil
+}
+
+func (s *MainService) GetCourseDetails(_ context.Context, request *pb.GetCourseDetailRequest) (*pb.GetCourseDetailResponse, error) {
+	courseCode := request.GetCourseCode()
+	if courseCode == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "cannot get course details with empty course code")
+	}
+	course, err := models.GetCourseByCode(courseCode)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return &pb.GetCourseDetailResponse{}, nil
+	}
+	if err != nil {
+		return nil, status.Errorf(codes.Aborted, err.Error())
+	}
+
+	if course.Description == nil {
+		course.Description = new(string)
+	}
+	return &pb.GetCourseDetailResponse{
+		Course: &pb.Course{
+			CourseCode:  course.CourseCode,
+			Title:       course.Title,
+			Department:  course.Department,
+			Description: *course.Description,
+			Rating:      course.Rating,
+			Offered:     course.Offered,
+		},
+	}, nil
 }
 
 func NewMainService(jwtManager *jwt.Manager) *MainService {
