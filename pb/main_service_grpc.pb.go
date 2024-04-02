@@ -26,6 +26,7 @@ const (
 	MainService_ListCourses_FullMethodName        = "/service.MainService/ListCourses"
 	MainService_SearchCourses_FullMethodName      = "/service.MainService/SearchCourses"
 	MainService_GetCourseDetails_FullMethodName   = "/service.MainService/GetCourseDetails"
+	MainService_AddReview_FullMethodName          = "/service.MainService/AddReview"
 )
 
 // MainServiceClient is the client API for MainService service.
@@ -38,6 +39,7 @@ type MainServiceClient interface {
 	ListCourses(ctx context.Context, in *ListCoursesRequest, opts ...grpc.CallOption) (*CoursesResponse, error)
 	SearchCourses(ctx context.Context, in *SearchCourseRequest, opts ...grpc.CallOption) (*CoursesResponse, error)
 	GetCourseDetails(ctx context.Context, in *GetCourseDetailRequest, opts ...grpc.CallOption) (*GetCourseDetailResponse, error)
+	AddReview(ctx context.Context, in *AddReviewRequest, opts ...grpc.CallOption) (*AddReviewResponse, error)
 }
 
 type mainServiceClient struct {
@@ -102,6 +104,15 @@ func (c *mainServiceClient) GetCourseDetails(ctx context.Context, in *GetCourseD
 	return out, nil
 }
 
+func (c *mainServiceClient) AddReview(ctx context.Context, in *AddReviewRequest, opts ...grpc.CallOption) (*AddReviewResponse, error) {
+	out := new(AddReviewResponse)
+	err := c.cc.Invoke(ctx, MainService_AddReview_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MainServiceServer is the server API for MainService service.
 // All implementations must embed UnimplementedMainServiceServer
 // for forward compatibility
@@ -112,6 +123,7 @@ type MainServiceServer interface {
 	ListCourses(context.Context, *ListCoursesRequest) (*CoursesResponse, error)
 	SearchCourses(context.Context, *SearchCourseRequest) (*CoursesResponse, error)
 	GetCourseDetails(context.Context, *GetCourseDetailRequest) (*GetCourseDetailResponse, error)
+	AddReview(context.Context, *AddReviewRequest) (*AddReviewResponse, error)
 	mustEmbedUnimplementedMainServiceServer()
 }
 
@@ -136,6 +148,9 @@ func (UnimplementedMainServiceServer) SearchCourses(context.Context, *SearchCour
 }
 func (UnimplementedMainServiceServer) GetCourseDetails(context.Context, *GetCourseDetailRequest) (*GetCourseDetailResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCourseDetails not implemented")
+}
+func (UnimplementedMainServiceServer) AddReview(context.Context, *AddReviewRequest) (*AddReviewResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddReview not implemented")
 }
 func (UnimplementedMainServiceServer) mustEmbedUnimplementedMainServiceServer() {}
 
@@ -258,6 +273,24 @@ func _MainService_GetCourseDetails_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MainService_AddReview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddReviewRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MainServiceServer).AddReview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MainService_AddReview_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MainServiceServer).AddReview(ctx, req.(*AddReviewRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MainService_ServiceDesc is the grpc.ServiceDesc for MainService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -288,6 +321,10 @@ var MainService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetCourseDetails",
 			Handler:    _MainService_GetCourseDetails_Handler,
+		},
+		{
+			MethodName: "AddReview",
+			Handler:    _MainService_AddReview_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

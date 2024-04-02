@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -210,10 +211,15 @@ func (s *MainService) GetCourseDetails(_ context.Context, request *pb.GetCourseD
 	if err != nil {
 		return nil, status.Errorf(codes.Aborted, err.Error())
 	}
-
 	if course.Description == nil {
 		course.Description = new(string)
 	}
+
+	courseReviews, err := models.GetAllCourseReviews(courseCode)
+	if err != nil {
+		return nil, status.Errorf(codes.Aborted, err.Error())
+	}
+
 	return &pb.GetCourseDetailResponse{
 		Course: &pb.Course{
 			CourseCode:  course.CourseCode,
@@ -223,6 +229,81 @@ func (s *MainService) GetCourseDetails(_ context.Context, request *pb.GetCourseD
 			Rating:      course.Rating,
 			Offered:     course.Offered,
 		},
+		Reviews: courseReviews,
+	}, nil
+}
+
+func (s *MainService) AddReview(context context.Context, request *pb.AddReviewRequest) (*pb.AddReviewResponse, error) {
+	jwtClaims := context.Value(constants.JWTClaimsKey).(*jwt.UserClaims)
+	userUUID := jwtClaims.Subject
+	if userUUID == "" {
+		log.Printf("empty uuid or error")
+		return nil, status.Errorf(codes.Unauthenticated, "unauthenticated")
+	}
+	courseCode := request.GetCourseCode()
+	if courseCode == "" || len(courseCode) > 10 {
+		errorMessage := "Invalid course code"
+		return &pb.AddReviewResponse{
+			Result:       pb.AddReviewResult_INVALID_COURSE_CODE,
+			ErrorMessage: &errorMessage,
+		}, nil
+	}
+	rating := request.GetRating()
+	if rating < 0 || rating > 5 {
+		errorMessage := "Invalid rating"
+		return &pb.AddReviewResponse{
+			Result:       pb.AddReviewResult_INVALID_RATING,
+			ErrorMessage: &errorMessage,
+		}, nil
+	}
+	lecturers := request.GetLecturers()
+	if len(lecturers) < 1 {
+		errorMessage := "Please provide at least one lecturer"
+		return &pb.AddReviewResponse{
+			Result:       pb.AddReviewResult_INVALID_LECTURERS,
+			ErrorMessage: &errorMessage,
+		}, nil
+	}
+	yearTaken := request.GetYearTaken()
+	if yearTaken > pb.AcademicYear_AY_2023_2024 {
+		errorMessage := "Cannot add review for future year"
+		return &pb.AddReviewResponse{
+			Result:       pb.AddReviewResult_INVALID_YEAR_TAKEN,
+			ErrorMessage: &errorMessage,
+		}, nil
+	}
+	content := request.GetContent()
+	if len(content) < 10 {
+		errorMessage := "Review is too short"
+		return &pb.AddReviewResponse{
+			Result:       pb.AddReviewResult_INVALID_CONTENT,
+			ErrorMessage: &errorMessage,
+		}, nil
+	}
+	err := models.AddCourseReview(userUUID, request)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			switch pgErr.Message {
+			case "review_published_already":
+				errorMessage := "Review already published"
+				return &pb.AddReviewResponse{
+					Result:       pb.AddReviewResult_ERROR_ALREADY_REVIEWED,
+					ErrorMessage: &errorMessage,
+				}, nil
+			case "course_not_taken":
+				errorMessage := "User has not taken this course"
+				return &pb.AddReviewResponse{
+					Result:       pb.AddReviewResult_ERROR_USER_NOT_TAKEN_COURSE,
+					ErrorMessage: &errorMessage,
+				}, nil
+			}
+		}
+		return nil, status.Errorf(codes.Aborted, err.Error())
+	}
+
+	return &pb.AddReviewResponse{
+		Result: pb.AddReviewResult_SUCCESS,
 	}, nil
 }
 

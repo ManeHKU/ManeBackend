@@ -3,13 +3,34 @@ package models
 import (
 	"ManeBackend/internal/env"
 	"ManeBackend/models/types"
+	"ManeBackend/pb"
 	"context"
 	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"log"
 )
+
+var yearTakenMapToPG = map[pb.AcademicYear]string{
+	pb.AcademicYear_AY_2018_2019: "2018-2019",
+	pb.AcademicYear_AY_2019_2020: "2019-2020",
+	pb.AcademicYear_AY_2020_2021: "2020-2021",
+	pb.AcademicYear_AY_2021_2022: "2021-2022",
+	pb.AcademicYear_AY_2022_2023: "2022-2023",
+	pb.AcademicYear_AY_2023_2024: "2023-2024",
+}
+
+var yearTakenMapToProto = map[string]pb.AcademicYear{
+	"2018-2019": pb.AcademicYear_AY_2018_2019,
+	"2019-2020": pb.AcademicYear_AY_2019_2020,
+	"2020-2021": pb.AcademicYear_AY_2020_2021,
+	"2021-2022": pb.AcademicYear_AY_2021_2022,
+	"2022-2023": pb.AcademicYear_AY_2022_2023,
+	"2023-2024": pb.AcademicYear_AY_2023_2024,
+}
 
 var dbPool *pgxpool.Pool
 
@@ -180,6 +201,74 @@ func GetCourseByCode(courseCode string) (*types.Course, error) {
 		return nil, err
 	}
 	return &course, nil
+}
+
+func AddCourseReview(uuid string, request *pb.AddReviewRequest) error {
+	userExist := CheckUserExist(uuid)
+	if !userExist {
+		return errors.New("user not exist")
+	}
+
+	ctx := context.Background()
+	tx, err := dbPool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func(tx pgx.Tx, ctx context.Context) {
+		rollBackErr := tx.Rollback(ctx)
+		if rollBackErr != nil {
+			err = rollBackErr
+		}
+	}(tx, ctx)
+
+	yearTaken, ok := yearTakenMapToPG[request.GetYearTaken()]
+	if !ok {
+		return errors.New("unsupported taken year")
+	}
+	result, err := dbPool.Exec(ctx, "INSERT INTO course_reviews(author, course_code, lecturers, year_taken, semester_taken, content,rating) VALUES($1, $2, $3, $4, $5, $6, $7)", uuid, request.CourseCode, request.Lecturers, yearTaken, request.SemesterTaken.String(), request.Content, request.Rating)
+	if err != nil {
+		return err
+	}
+	err = tx.Commit(ctx)
+	if err != nil {
+		return err
+	}
+	if result.Insert() && result.RowsAffected() == 1 {
+		return nil
+	}
+	return errors.New("unknown error")
+}
+
+func GetAllCourseReviews(courseCode string) ([]*pb.Review, error) {
+	rows, err := dbPool.Query(context.Background(), "select year_taken, semester_taken, content, rating, lecturers, created_at from course_reviews where course_code = $1", courseCode)
+	if err != nil {
+		return nil, err
+	}
+
+	var (
+		yearTaken, semesterTaken, content string
+		lecturers                         []string
+		rating                            int
+		createdAt                         pgtype.Timestamptz
+	)
+
+	reviews := make([]*pb.Review, 0)
+	_, err = pgx.ForEachRow(rows, []any{&yearTaken, &semesterTaken, &content, &rating, &lecturers, &createdAt}, func() error {
+		reviews = append(reviews, &pb.Review{
+			CourseCode:    courseCode,
+			YearTaken:     yearTakenMapToProto[yearTaken],
+			SemesterTaken: pb.Semester(pb.Semester_value[semesterTaken]),
+			Content:       content,
+			Rating:        int32(rating),
+			Lecturers:     lecturers,
+			CreatedAt:     timestamppb.New(createdAt.Time),
+		})
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return reviews, nil
 }
 
 func Close() {
