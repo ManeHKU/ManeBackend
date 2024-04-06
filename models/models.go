@@ -271,6 +271,26 @@ func GetAllCourseReviews(courseCode string) ([]*pb.Review, error) {
 	return reviews, nil
 }
 
+func CheckUserEnrolledCourse(uuid string, courseCode string) bool {
+	var exist bool
+	err := dbPool.QueryRow(context.Background(), "SELECT EXISTS(SELECT 1 FROM class_enrolment WHERE user_id = $1 and course_code = $2)", uuid, courseCode).Scan(&exist)
+	if err != nil || !exist {
+		log.Printf("check user enrolled course error: %v", err)
+		return false
+	}
+	return true
+}
+
+func CheckUserPublishedReview(uuid string, courseCode string) bool {
+	var exist bool
+	err := dbPool.QueryRow(context.Background(), "SELECT EXISTS(SELECT 1 FROM course_reviews WHERE author = $1 and course_code = $2)", uuid, courseCode).Scan(&exist)
+	if err != nil || !exist {
+		log.Printf("check user published review error: %v", err)
+		return false
+	}
+	return true
+}
+
 func Close() {
 	defer dbPool.Close()
 }

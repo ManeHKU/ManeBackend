@@ -199,7 +199,7 @@ func (s *MainService) SearchCourses(_ context.Context, request *pb.SearchCourseR
 	}, nil
 }
 
-func (s *MainService) GetCourseDetails(_ context.Context, request *pb.GetCourseDetailRequest) (*pb.GetCourseDetailResponse, error) {
+func (s *MainService) GetCourseDetails(context context.Context, request *pb.GetCourseDetailRequest) (*pb.GetCourseDetailResponse, error) {
 	courseCode := request.GetCourseCode()
 	if courseCode == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "cannot get course details with empty course code")
@@ -220,6 +220,12 @@ func (s *MainService) GetCourseDetails(_ context.Context, request *pb.GetCourseD
 		return nil, status.Errorf(codes.Aborted, err.Error())
 	}
 
+	jwtClaims := context.Value(constants.JWTClaimsKey).(*jwt.UserClaims)
+	userUUID := jwtClaims.Subject
+
+	userEnrolledCourse := models.CheckUserEnrolledCourse(userUUID, courseCode)
+	userPublishedReview := models.CheckUserPublishedReview(userUUID, courseCode)
+
 	return &pb.GetCourseDetailResponse{
 		Course: &pb.Course{
 			CourseCode:  course.CourseCode,
@@ -230,6 +236,10 @@ func (s *MainService) GetCourseDetails(_ context.Context, request *pb.GetCourseD
 			Offered:     course.Offered,
 		},
 		Reviews: courseReviews,
+		Meta: &pb.AddReviewMeta{
+			UserHasTakenCourse: userEnrolledCourse,
+			UserHasReviewed:    userPublishedReview,
+		},
 	}, nil
 }
 
@@ -250,7 +260,7 @@ func (s *MainService) AddReview(context context.Context, request *pb.AddReviewRe
 	}
 	rating := request.GetRating()
 	if rating < 0 || rating > 5 {
-		errorMessage := "Invalid rating"
+		errorMessage := "Rating must be between 0 and 5"
 		return &pb.AddReviewResponse{
 			Result:       pb.AddReviewResult_INVALID_RATING,
 			ErrorMessage: &errorMessage,
@@ -266,7 +276,7 @@ func (s *MainService) AddReview(context context.Context, request *pb.AddReviewRe
 	}
 	yearTaken := request.GetYearTaken()
 	if yearTaken > pb.AcademicYear_AY_2023_2024 {
-		errorMessage := "Cannot add review for future year"
+		errorMessage := "Cannot add review in the future"
 		return &pb.AddReviewResponse{
 			Result:       pb.AddReviewResult_INVALID_YEAR_TAKEN,
 			ErrorMessage: &errorMessage,
@@ -274,7 +284,7 @@ func (s *MainService) AddReview(context context.Context, request *pb.AddReviewRe
 	}
 	content := request.GetContent()
 	if len(content) < 10 {
-		errorMessage := "Review is too short"
+		errorMessage := "Review is too short! Please make sure it is at least 10 characters long"
 		return &pb.AddReviewResponse{
 			Result:       pb.AddReviewResult_INVALID_CONTENT,
 			ErrorMessage: &errorMessage,
@@ -286,13 +296,13 @@ func (s *MainService) AddReview(context context.Context, request *pb.AddReviewRe
 		if errors.As(err, &pgErr) {
 			switch pgErr.Message {
 			case "review_published_already":
-				errorMessage := "Review already published"
+				errorMessage := "You have already published a review for this course"
 				return &pb.AddReviewResponse{
 					Result:       pb.AddReviewResult_ERROR_ALREADY_REVIEWED,
 					ErrorMessage: &errorMessage,
 				}, nil
 			case "course_not_taken":
-				errorMessage := "User has not taken this course"
+				errorMessage := "You have not taken this course before"
 				return &pb.AddReviewResponse{
 					Result:       pb.AddReviewResult_ERROR_USER_NOT_TAKEN_COURSE,
 					ErrorMessage: &errorMessage,
