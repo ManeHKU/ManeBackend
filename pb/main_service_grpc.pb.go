@@ -27,6 +27,9 @@ const (
 	MainService_SearchCourses_FullMethodName      = "/service.MainService/SearchCourses"
 	MainService_GetCourseDetails_FullMethodName   = "/service.MainService/GetCourseDetails"
 	MainService_AddReview_FullMethodName          = "/service.MainService/AddReview"
+	MainService_ListLatestEvents_FullMethodName   = "/service.MainService/ListLatestEvents"
+	MainService_AddEvent_FullMethodName           = "/service.MainService/AddEvent"
+	MainService_ApplyEvent_FullMethodName         = "/service.MainService/ApplyEvent"
 )
 
 // MainServiceClient is the client API for MainService service.
@@ -40,6 +43,9 @@ type MainServiceClient interface {
 	SearchCourses(ctx context.Context, in *SearchCourseRequest, opts ...grpc.CallOption) (*CoursesResponse, error)
 	GetCourseDetails(ctx context.Context, in *GetCourseDetailRequest, opts ...grpc.CallOption) (*GetCourseDetailResponse, error)
 	AddReview(ctx context.Context, in *AddReviewRequest, opts ...grpc.CallOption) (*AddReviewResponse, error)
+	ListLatestEvents(ctx context.Context, in *ListLatestEventsRequest, opts ...grpc.CallOption) (*ListLatestEventsResponse, error)
+	AddEvent(ctx context.Context, in *AddEventRequest, opts ...grpc.CallOption) (*AddEventResponse, error)
+	ApplyEvent(ctx context.Context, in *ApplyEventRequest, opts ...grpc.CallOption) (*ApplyEventResponse, error)
 }
 
 type mainServiceClient struct {
@@ -113,6 +119,33 @@ func (c *mainServiceClient) AddReview(ctx context.Context, in *AddReviewRequest,
 	return out, nil
 }
 
+func (c *mainServiceClient) ListLatestEvents(ctx context.Context, in *ListLatestEventsRequest, opts ...grpc.CallOption) (*ListLatestEventsResponse, error) {
+	out := new(ListLatestEventsResponse)
+	err := c.cc.Invoke(ctx, MainService_ListLatestEvents_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mainServiceClient) AddEvent(ctx context.Context, in *AddEventRequest, opts ...grpc.CallOption) (*AddEventResponse, error) {
+	out := new(AddEventResponse)
+	err := c.cc.Invoke(ctx, MainService_AddEvent_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mainServiceClient) ApplyEvent(ctx context.Context, in *ApplyEventRequest, opts ...grpc.CallOption) (*ApplyEventResponse, error) {
+	out := new(ApplyEventResponse)
+	err := c.cc.Invoke(ctx, MainService_ApplyEvent_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MainServiceServer is the server API for MainService service.
 // All implementations must embed UnimplementedMainServiceServer
 // for forward compatibility
@@ -124,6 +157,9 @@ type MainServiceServer interface {
 	SearchCourses(context.Context, *SearchCourseRequest) (*CoursesResponse, error)
 	GetCourseDetails(context.Context, *GetCourseDetailRequest) (*GetCourseDetailResponse, error)
 	AddReview(context.Context, *AddReviewRequest) (*AddReviewResponse, error)
+	ListLatestEvents(context.Context, *ListLatestEventsRequest) (*ListLatestEventsResponse, error)
+	AddEvent(context.Context, *AddEventRequest) (*AddEventResponse, error)
+	ApplyEvent(context.Context, *ApplyEventRequest) (*ApplyEventResponse, error)
 	mustEmbedUnimplementedMainServiceServer()
 }
 
@@ -151,6 +187,15 @@ func (UnimplementedMainServiceServer) GetCourseDetails(context.Context, *GetCour
 }
 func (UnimplementedMainServiceServer) AddReview(context.Context, *AddReviewRequest) (*AddReviewResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddReview not implemented")
+}
+func (UnimplementedMainServiceServer) ListLatestEvents(context.Context, *ListLatestEventsRequest) (*ListLatestEventsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListLatestEvents not implemented")
+}
+func (UnimplementedMainServiceServer) AddEvent(context.Context, *AddEventRequest) (*AddEventResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddEvent not implemented")
+}
+func (UnimplementedMainServiceServer) ApplyEvent(context.Context, *ApplyEventRequest) (*ApplyEventResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ApplyEvent not implemented")
 }
 func (UnimplementedMainServiceServer) mustEmbedUnimplementedMainServiceServer() {}
 
@@ -291,6 +336,60 @@ func _MainService_AddReview_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MainService_ListLatestEvents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListLatestEventsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MainServiceServer).ListLatestEvents(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MainService_ListLatestEvents_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MainServiceServer).ListLatestEvents(ctx, req.(*ListLatestEventsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MainService_AddEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddEventRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MainServiceServer).AddEvent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MainService_AddEvent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MainServiceServer).AddEvent(ctx, req.(*AddEventRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MainService_ApplyEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApplyEventRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MainServiceServer).ApplyEvent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MainService_ApplyEvent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MainServiceServer).ApplyEvent(ctx, req.(*ApplyEventRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MainService_ServiceDesc is the grpc.ServiceDesc for MainService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -325,6 +424,18 @@ var MainService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddReview",
 			Handler:    _MainService_AddReview_Handler,
+		},
+		{
+			MethodName: "ListLatestEvents",
+			Handler:    _MainService_ListLatestEvents_Handler,
+		},
+		{
+			MethodName: "AddEvent",
+			Handler:    _MainService_AddEvent_Handler,
+		},
+		{
+			MethodName: "ApplyEvent",
+			Handler:    _MainService_ApplyEvent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
