@@ -14,6 +14,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"log"
+	"time"
 )
 
 type MainService struct {
@@ -314,6 +315,155 @@ func (s *MainService) AddReview(context context.Context, request *pb.AddReviewRe
 
 	return &pb.AddReviewResponse{
 		Result: pb.AddReviewResult_SUCCESS,
+	}, nil
+}
+
+func (s *MainService) AddEvent(context context.Context, request *pb.AddEventRequest) (*pb.AddEventResponse, error) {
+	jwtClaims := context.Value(constants.JWTClaimsKey).(*jwt.UserClaims)
+	userUUID := jwtClaims.Subject
+	if userUUID == "" {
+		log.Printf("empty uuid or error")
+		return nil, status.Errorf(codes.Unauthenticated, "unauthenticated")
+	}
+
+	organizerUUID := request.GetOrganizerId()
+	if len(organizerUUID) > 36 || len(organizerUUID) == 0 {
+		errorMessage := "Invalid organizer id"
+		return &pb.AddEventResponse{
+			Success:      false,
+			ErrorMessage: &errorMessage,
+		}, nil
+	}
+
+	eventTitle := request.GetTitle()
+	if len(eventTitle) > 100 || len(eventTitle) == 0 {
+		errorMessage := "Invalid event title"
+		return &pb.AddEventResponse{
+			Success:      false,
+			ErrorMessage: &errorMessage,
+		}, nil
+	}
+
+	eventStartDate := request.GetStartTime()
+	eventEndDate := request.GetEndTime()
+	if eventStartDate.AsTime().After(eventEndDate.AsTime()) {
+		errorMessage := "Invalid start and end time"
+		return &pb.AddEventResponse{
+			Success:      false,
+			ErrorMessage: &errorMessage,
+		}, nil
+	} else if eventStartDate.AsTime().Before(time.Now()) {
+		errorMessage := "Invalid start time"
+		return &pb.AddEventResponse{
+			Success:      false,
+			ErrorMessage: &errorMessage,
+		}, nil
+	}
+
+	titleImagePath := request.GetImagePath()
+	eventDescription := request.GetDescription()
+	eventLocation := request.GetLocation()
+
+	participationLimit := request.GetParticipantLimit()
+	if participationLimit < 0 || participationLimit > 500 {
+		errorMessage := "Invalid participant limit"
+		return &pb.AddEventResponse{
+			Success:      false,
+			ErrorMessage: &errorMessage,
+		}, nil
+	}
+
+	applyInfo := request.GetApplyInfo()
+
+	err := models.AddCampusEvent(userUUID, organizerUUID, eventTitle, eventStartDate.AsTime(), eventEndDate.AsTime(), eventLocation, eventDescription, participationLimit, titleImagePath, applyInfo)
+
+	if err != nil {
+		errorMessage := err.Error()
+		return &pb.AddEventResponse{
+			Success:      false,
+			ErrorMessage: &errorMessage,
+		}, nil
+	}
+
+	return &pb.AddEventResponse{
+		Success: true,
+	}, nil
+}
+
+func (s *MainService) ListLatestEvents(_ context.Context, request *pb.ListLatestEventsRequest) (*pb.ListLatestEventsResponse, error) {
+	results, err := models.ListFutureCampusEvents(request.SortBy)
+	if err != nil {
+		errorMessage := err.Error()
+		return &pb.ListLatestEventsResponse{
+			Events:       nil,
+			ErrorMessage: &errorMessage,
+		}, nil
+	}
+
+	return &pb.ListLatestEventsResponse{
+		Events: results,
+	}, nil
+}
+
+func (s *MainService) ApplyEvent(context context.Context, request *pb.ApplyEventRequest) (*pb.ApplyEventResponse, error) {
+	jwtClaims := context.Value(constants.JWTClaimsKey).(*jwt.UserClaims)
+	userUUID := jwtClaims.Subject
+	if userUUID == "" {
+		log.Printf("empty uuid or error")
+		return nil, status.Errorf(codes.Unauthenticated, "unauthenticated")
+	}
+
+	eventID := request.GetEventId()
+	if len(eventID) > 36 || len(eventID) == 0 {
+		errorMessage := "Invalid event id"
+		return &pb.ApplyEventResponse{
+			Success:      false,
+			ErrorMessage: &errorMessage,
+		}, nil
+	}
+
+	answers := request.GetAnswers()
+	err := models.ApplyCampusEvent(userUUID, eventID, answers)
+	if err != nil {
+		errorMessage := err.Error()
+		return &pb.ApplyEventResponse{
+			Success:      false,
+			ErrorMessage: &errorMessage,
+		}, nil
+	}
+
+	return &pb.ApplyEventResponse{
+		Success: true,
+	}, nil
+}
+
+func (s *MainService) GetEventApplyInfo(ctx context.Context, request *pb.GetEventApplyInfoRequest) (*pb.GetEventApplyInfoResponse, error) {
+	jwtClaims := ctx.Value(constants.JWTClaimsKey).(*jwt.UserClaims)
+	userUUID := jwtClaims.Subject
+	if userUUID == "" {
+		log.Printf("empty uuid or error")
+		return nil, status.Errorf(codes.Unauthenticated, "unauthenticated")
+	}
+	eventID := request.GetEventId()
+	if len(eventID) > 36 || len(eventID) == 0 {
+		return &pb.GetEventApplyInfoResponse{
+			UserApplied: false,
+		}, nil
+	}
+
+	applyInfo, questions, userApplied, err := models.GetApplyInfo(eventID, userUUID)
+	if err != nil {
+		return &pb.GetEventApplyInfoResponse{
+			UserApplied: false,
+		}, nil
+
+	}
+	return &pb.GetEventApplyInfoResponse{
+		ApplyInfo: &pb.ApplyInfo{
+			Info:      &applyInfo,
+			Questions: questions,
+		},
+		UserApplied: userApplied,
 	}, nil
 }
 

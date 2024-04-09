@@ -30,6 +30,7 @@ const (
 	MainService_ListLatestEvents_FullMethodName     = "/service.MainService/ListLatestEvents"
 	MainService_AddEvent_FullMethodName             = "/service.MainService/AddEvent"
 	MainService_ApplyEvent_FullMethodName           = "/service.MainService/ApplyEvent"
+	MainService_GetEventApplyInfo_FullMethodName    = "/service.MainService/GetEventApplyInfo"
 	MainService_ListUserAppliedEvent_FullMethodName = "/service.MainService/ListUserAppliedEvent"
 )
 
@@ -47,6 +48,7 @@ type MainServiceClient interface {
 	ListLatestEvents(ctx context.Context, in *ListLatestEventsRequest, opts ...grpc.CallOption) (*ListLatestEventsResponse, error)
 	AddEvent(ctx context.Context, in *AddEventRequest, opts ...grpc.CallOption) (*AddEventResponse, error)
 	ApplyEvent(ctx context.Context, in *ApplyEventRequest, opts ...grpc.CallOption) (*ApplyEventResponse, error)
+	GetEventApplyInfo(ctx context.Context, in *GetEventApplyInfoRequest, opts ...grpc.CallOption) (*GetEventApplyInfoResponse, error)
 	ListUserAppliedEvent(ctx context.Context, in *ListUserAppliedEventRequest, opts ...grpc.CallOption) (*ListUserAppliedEventResponse, error)
 }
 
@@ -148,6 +150,15 @@ func (c *mainServiceClient) ApplyEvent(ctx context.Context, in *ApplyEventReques
 	return out, nil
 }
 
+func (c *mainServiceClient) GetEventApplyInfo(ctx context.Context, in *GetEventApplyInfoRequest, opts ...grpc.CallOption) (*GetEventApplyInfoResponse, error) {
+	out := new(GetEventApplyInfoResponse)
+	err := c.cc.Invoke(ctx, MainService_GetEventApplyInfo_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *mainServiceClient) ListUserAppliedEvent(ctx context.Context, in *ListUserAppliedEventRequest, opts ...grpc.CallOption) (*ListUserAppliedEventResponse, error) {
 	out := new(ListUserAppliedEventResponse)
 	err := c.cc.Invoke(ctx, MainService_ListUserAppliedEvent_FullMethodName, in, out, opts...)
@@ -171,6 +182,7 @@ type MainServiceServer interface {
 	ListLatestEvents(context.Context, *ListLatestEventsRequest) (*ListLatestEventsResponse, error)
 	AddEvent(context.Context, *AddEventRequest) (*AddEventResponse, error)
 	ApplyEvent(context.Context, *ApplyEventRequest) (*ApplyEventResponse, error)
+	GetEventApplyInfo(context.Context, *GetEventApplyInfoRequest) (*GetEventApplyInfoResponse, error)
 	ListUserAppliedEvent(context.Context, *ListUserAppliedEventRequest) (*ListUserAppliedEventResponse, error)
 	mustEmbedUnimplementedMainServiceServer()
 }
@@ -208,6 +220,9 @@ func (UnimplementedMainServiceServer) AddEvent(context.Context, *AddEventRequest
 }
 func (UnimplementedMainServiceServer) ApplyEvent(context.Context, *ApplyEventRequest) (*ApplyEventResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ApplyEvent not implemented")
+}
+func (UnimplementedMainServiceServer) GetEventApplyInfo(context.Context, *GetEventApplyInfoRequest) (*GetEventApplyInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetEventApplyInfo not implemented")
 }
 func (UnimplementedMainServiceServer) ListUserAppliedEvent(context.Context, *ListUserAppliedEventRequest) (*ListUserAppliedEventResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListUserAppliedEvent not implemented")
@@ -405,6 +420,24 @@ func _MainService_ApplyEvent_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MainService_GetEventApplyInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetEventApplyInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MainServiceServer).GetEventApplyInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MainService_GetEventApplyInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MainServiceServer).GetEventApplyInfo(ctx, req.(*GetEventApplyInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _MainService_ListUserAppliedEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListUserAppliedEventRequest)
 	if err := dec(in); err != nil {
@@ -469,6 +502,10 @@ var MainService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ApplyEvent",
 			Handler:    _MainService_ApplyEvent_Handler,
+		},
+		{
+			MethodName: "GetEventApplyInfo",
+			Handler:    _MainService_GetEventApplyInfo_Handler,
 		},
 		{
 			MethodName: "ListUserAppliedEvent",

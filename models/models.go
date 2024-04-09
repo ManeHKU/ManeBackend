@@ -5,6 +5,8 @@ import (
 	"ManeBackend/models/types"
 	"ManeBackend/pb"
 	"context"
+	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
@@ -12,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"log"
+	"time"
 )
 
 var yearTakenMapToPG = map[pb.AcademicYear]string{
@@ -289,6 +292,200 @@ func CheckUserPublishedReview(uuid string, courseCode string) bool {
 		return false
 	}
 	return true
+}
+
+func CheckUserIsOrganizerAdmin(uuid string, organizerUUID string) bool {
+	var exist bool
+	err := dbPool.QueryRow(context.Background(), "SELECT EXISTS(SELECT 1 FROM organizer_admins WHERE admin = $1 AND organizer = $2)", uuid, organizerUUID).Scan(&exist)
+	if err != nil {
+		log.Printf("check user is organizer admin error: %v", err)
+		return false
+	}
+	return exist
+}
+
+func AddCampusEvent(uuid string, organizerUUID string, title string, startDate time.Time, endDate time.Time, location string, description string, participantLimit int32, imagePath string, applyInfo *pb.ApplyInfo) error {
+	userIsAdmin := CheckUserIsOrganizerAdmin(uuid, organizerUUID)
+	if !userIsAdmin {
+		return errors.New("user is not admin")
+	}
+
+	ctx := context.Background()
+	tx, err := dbPool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func(tx pgx.Tx, ctx context.Context) {
+		rollBackErr := tx.Rollback(ctx)
+		if rollBackErr != nil {
+			err = rollBackErr
+		}
+	}(tx, ctx)
+
+	var imagePathPG pgtype.Text
+	imagePathPG = pgtype.Text(NewNullString(imagePath))
+
+	var eventId string
+	err = dbPool.QueryRow(ctx, "INSERT INTO event_info(organizer, title, start_datetime, end_datetime, location, description, title_image_path, participant_limit) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id", organizerUUID, title, startDate, endDate, location, description, imagePathPG, participantLimit).Scan(&eventId)
+	if err != nil {
+		return err
+	}
+	_, err = dbPool.Exec(ctx, "INSERT INTO event_apply_info(event_id, info, questions) VALUES($1, $2, $3)", eventId, applyInfo.Info, applyInfo.Questions)
+	if err != nil {
+		return err
+	}
+	err = tx.Commit(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ListFutureCampusEvents(sortBy pb.SortBy) ([]*pb.ListLatestEventsResponse_FullEventInfo, error) {
+	var sortByColumn string
+	if sortBy == pb.SortBy_CREATED_AT {
+		sortByColumn = "created_at"
+	} else if sortBy == pb.SortBy_PARTICIPATION_TIME {
+		sortByColumn = "start_datetime"
+	}
+
+	eventRows, err := dbPool.Query(context.Background(), "select event_id::text, organizer::text as organizer_id, title, title_image_path, start_datetime, end_datetime, location, event_info.description, status,  event_info.updated_at, organizer.name, organizer.description, event_with_participant_count.participant_limit, event_with_participant_count.participant_count from event_info left join organizer on event_info.organizer = organizer.id left join event_with_participant_count on event_with_participant_count.event_id = event_info.id where status = 'OPEN'::event_status and start_datetime > now() order by $1", sortByColumn)
+	if err != nil {
+		return nil, err
+	}
+
+	eventMaps, err := pgx.CollectRows(eventRows, pgx.RowToMap)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*pb.ListLatestEventsResponse_FullEventInfo, len(eventMaps))
+	for i, event := range eventMaps {
+		var imagePath *string
+		if event["title_image_path"] != nil {
+			text := event["title_image_path"].(string)
+			imagePath = &text
+		} else {
+			imagePath = nil
+		}
+		eventInfo := &pb.EventInfo{
+			Id:          event["event_id"].(string),
+			OrganizerId: event["organizer_id"].(string),
+			Title:       event["title"].(string),
+			ImagePath:   imagePath,
+			StartTime:   timestamppb.New(event["start_datetime"].(time.Time)),
+			EndTime:     timestamppb.New(event["end_datetime"].(time.Time)),
+			Location:    event["location"].(string),
+			Description: event["description"].(string),
+			Status:      pb.EventStatus(pb.EventStatus_value[event["status"].(string)]),
+			UpdatedAt:   timestamppb.New(event["updated_at"].(time.Time)),
+		}
+		var organizationDescription *string
+		if event["description"] != nil {
+			text := event["description"].(string)
+			organizationDescription = &text
+		} else {
+			organizationDescription = nil
+		}
+		organizer := &pb.OrganizerInfo{
+			Id:          event["organizer_id"].(string),
+			Name:        event["name"].(string),
+			Description: organizationDescription,
+		}
+		participation := &pb.EventParticipation{
+			Limit:        int32(event["participant_limit"].(int16)),
+			CurrentCount: int32(event["participant_count"].(int64)),
+		}
+		result[i] = &pb.ListLatestEventsResponse_FullEventInfo{
+			Event:         eventInfo,
+			Organizer:     organizer,
+			Participation: participation,
+		}
+	}
+
+	return result, nil
+}
+
+func GetApplyInfo(eventId string, userUUID string) (applyInfo string, questions []string, userApplied bool, err error) {
+	err = dbPool.QueryRow(context.Background(), "SELECT event_apply_info.info, event_apply_info.questions FROM event_apply_info WHERE event_id = $1", eventId).Scan(&applyInfo, &questions)
+	if err != nil {
+		return "", nil, false, err
+	}
+
+	err = dbPool.QueryRow(context.Background(), "SELECT EXISTS(SELECT 1 FROM event_participants WHERE event_id = $1 AND participant_id = $2)", eventId, userUUID).Scan(&userApplied)
+	if err != nil {
+		return "", nil, false, err
+	}
+
+	return applyInfo, questions, userApplied, nil
+}
+
+func CheckOrganizerExist(organizerUUID string) (exist bool) {
+	err := dbPool.QueryRow(context.Background(), "SELECT EXISTS(SELECT 1 FROM organizer WHERE id = $1)", organizerUUID).Scan(&exist)
+	if err != nil {
+		log.Printf("check organizer exist error: %v", err)
+	}
+	return exist
+}
+
+func ApplyCampusEvent(userUUID string, eventID string, answers map[string]string) error {
+	ctx := context.Background()
+	tx, err := dbPool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func(tx pgx.Tx, ctx context.Context) {
+		rollBackErr := tx.Rollback(ctx)
+		if rollBackErr != nil {
+			err = rollBackErr
+		}
+	}(tx, ctx)
+
+	var userApplied bool
+	err = dbPool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM event_participants WHERE event_id = $1 AND participant_id = $2)", eventID, userUUID).Scan(&userApplied)
+	if userApplied || err != nil {
+		return errors.New("user already applied")
+	}
+
+	var isEventFull bool
+	err = dbPool.QueryRow(ctx, "SELECT participant_count >= participant_limit FROM event_with_participant_count where event_id = $1", eventID).Scan(&isEventFull)
+	if err != nil {
+		return err
+	} else if isEventFull {
+		return errors.New("event is full")
+	}
+
+	var isEventOpen bool
+	err = dbPool.QueryRow(ctx, "SELECT status = 'OPEN'::event_status FROM event_info where id = $1", eventID).Scan(&isEventOpen)
+	if err != nil {
+		return err
+	}
+	if !isEventOpen {
+		return errors.New("event is not open")
+	}
+
+	answersJSON, _ := json.Marshal(answers)
+	_, err = dbPool.Exec(ctx, "INSERT INTO event_participants(event_id, participant_id, answer) VALUES($1, $2, $3)", eventID, userUUID, answersJSON)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func NewNullString(s string) sql.NullString {
+	if len(s) == 0 {
+		return sql.NullString{}
+	}
+	return sql.NullString{
+		String: s,
+		Valid:  true,
+	}
 }
 
 func Close() {
