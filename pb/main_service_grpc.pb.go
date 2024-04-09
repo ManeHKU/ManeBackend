@@ -20,16 +20,17 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	MainService_GetUpdatedURLs_FullMethodName     = "/service.MainService/GetUpdatedURLs"
-	MainService_UpdateUserInfo_FullMethodName     = "/service.MainService/UpdateUserInfo"
-	MainService_UpsertTakenCourses_FullMethodName = "/service.MainService/UpsertTakenCourses"
-	MainService_ListCourses_FullMethodName        = "/service.MainService/ListCourses"
-	MainService_SearchCourses_FullMethodName      = "/service.MainService/SearchCourses"
-	MainService_GetCourseDetails_FullMethodName   = "/service.MainService/GetCourseDetails"
-	MainService_AddReview_FullMethodName          = "/service.MainService/AddReview"
-	MainService_ListLatestEvents_FullMethodName   = "/service.MainService/ListLatestEvents"
-	MainService_AddEvent_FullMethodName           = "/service.MainService/AddEvent"
-	MainService_ApplyEvent_FullMethodName         = "/service.MainService/ApplyEvent"
+	MainService_GetUpdatedURLs_FullMethodName       = "/service.MainService/GetUpdatedURLs"
+	MainService_UpdateUserInfo_FullMethodName       = "/service.MainService/UpdateUserInfo"
+	MainService_UpsertTakenCourses_FullMethodName   = "/service.MainService/UpsertTakenCourses"
+	MainService_ListCourses_FullMethodName          = "/service.MainService/ListCourses"
+	MainService_SearchCourses_FullMethodName        = "/service.MainService/SearchCourses"
+	MainService_GetCourseDetails_FullMethodName     = "/service.MainService/GetCourseDetails"
+	MainService_AddReview_FullMethodName            = "/service.MainService/AddReview"
+	MainService_ListLatestEvents_FullMethodName     = "/service.MainService/ListLatestEvents"
+	MainService_AddEvent_FullMethodName             = "/service.MainService/AddEvent"
+	MainService_ApplyEvent_FullMethodName           = "/service.MainService/ApplyEvent"
+	MainService_ListUserAppliedEvent_FullMethodName = "/service.MainService/ListUserAppliedEvent"
 )
 
 // MainServiceClient is the client API for MainService service.
@@ -46,6 +47,7 @@ type MainServiceClient interface {
 	ListLatestEvents(ctx context.Context, in *ListLatestEventsRequest, opts ...grpc.CallOption) (*ListLatestEventsResponse, error)
 	AddEvent(ctx context.Context, in *AddEventRequest, opts ...grpc.CallOption) (*AddEventResponse, error)
 	ApplyEvent(ctx context.Context, in *ApplyEventRequest, opts ...grpc.CallOption) (*ApplyEventResponse, error)
+	ListUserAppliedEvent(ctx context.Context, in *ListUserAppliedEventRequest, opts ...grpc.CallOption) (*ListUserAppliedEventResponse, error)
 }
 
 type mainServiceClient struct {
@@ -146,6 +148,15 @@ func (c *mainServiceClient) ApplyEvent(ctx context.Context, in *ApplyEventReques
 	return out, nil
 }
 
+func (c *mainServiceClient) ListUserAppliedEvent(ctx context.Context, in *ListUserAppliedEventRequest, opts ...grpc.CallOption) (*ListUserAppliedEventResponse, error) {
+	out := new(ListUserAppliedEventResponse)
+	err := c.cc.Invoke(ctx, MainService_ListUserAppliedEvent_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MainServiceServer is the server API for MainService service.
 // All implementations must embed UnimplementedMainServiceServer
 // for forward compatibility
@@ -160,6 +171,7 @@ type MainServiceServer interface {
 	ListLatestEvents(context.Context, *ListLatestEventsRequest) (*ListLatestEventsResponse, error)
 	AddEvent(context.Context, *AddEventRequest) (*AddEventResponse, error)
 	ApplyEvent(context.Context, *ApplyEventRequest) (*ApplyEventResponse, error)
+	ListUserAppliedEvent(context.Context, *ListUserAppliedEventRequest) (*ListUserAppliedEventResponse, error)
 	mustEmbedUnimplementedMainServiceServer()
 }
 
@@ -196,6 +208,9 @@ func (UnimplementedMainServiceServer) AddEvent(context.Context, *AddEventRequest
 }
 func (UnimplementedMainServiceServer) ApplyEvent(context.Context, *ApplyEventRequest) (*ApplyEventResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ApplyEvent not implemented")
+}
+func (UnimplementedMainServiceServer) ListUserAppliedEvent(context.Context, *ListUserAppliedEventRequest) (*ListUserAppliedEventResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListUserAppliedEvent not implemented")
 }
 func (UnimplementedMainServiceServer) mustEmbedUnimplementedMainServiceServer() {}
 
@@ -390,6 +405,24 @@ func _MainService_ApplyEvent_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MainService_ListUserAppliedEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListUserAppliedEventRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MainServiceServer).ListUserAppliedEvent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MainService_ListUserAppliedEvent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MainServiceServer).ListUserAppliedEvent(ctx, req.(*ListUserAppliedEventRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MainService_ServiceDesc is the grpc.ServiceDesc for MainService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -436,6 +469,10 @@ var MainService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ApplyEvent",
 			Handler:    _MainService_ApplyEvent_Handler,
+		},
+		{
+			MethodName: "ListUserAppliedEvent",
+			Handler:    _MainService_ListUserAppliedEvent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
