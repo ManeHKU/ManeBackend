@@ -350,7 +350,9 @@ func ListFutureCampusEvents(sortBy pb.SortBy) ([]*pb.ListLatestEventsResponse_Fu
 		sortByColumn = "start_datetime"
 	}
 
-	eventRows, err := dbPool.Query(context.Background(), "select event_id::text, organizer::text as organizer_id, title, title_image_path, start_datetime, end_datetime, location, event_info.description, status,  event_info.updated_at, organizer.name, organizer.description, event_with_participant_count.participant_limit, event_with_participant_count.participant_count from event_info left join organizer on event_info.organizer = organizer.id left join event_with_participant_count on event_with_participant_count.event_id = event_info.id where status = 'OPEN'::event_status and start_datetime > now() order by $1", sortByColumn)
+	sql := fmt.Sprintf("select event_id::text, organizer::text as organizer_id, title, title_image_path, start_datetime, end_datetime, location, event_info.description as event_description, status,  event_info.updated_at, organizer.name, organizer.description as organizer_description, event_with_participant_count.participant_limit, event_with_participant_count.participant_count from event_info left join organizer on event_info.organizer = organizer.id left join event_with_participant_count on event_with_participant_count.event_id = event_info.id where (status = 'OPEN'::event_status or status = 'CLOSED'::event_status) and start_datetime > now() order by event_info.%s", sortByColumn)
+
+	eventRows, err := dbPool.Query(context.Background(), sql)
 	if err != nil {
 		return nil, err
 	}
@@ -377,13 +379,13 @@ func ListFutureCampusEvents(sortBy pb.SortBy) ([]*pb.ListLatestEventsResponse_Fu
 			StartTime:   timestamppb.New(event["start_datetime"].(time.Time)),
 			EndTime:     timestamppb.New(event["end_datetime"].(time.Time)),
 			Location:    event["location"].(string),
-			Description: event["description"].(string),
+			Description: event["event_description"].(string),
 			Status:      pb.EventStatus(pb.EventStatus_value[event["status"].(string)]),
 			UpdatedAt:   timestamppb.New(event["updated_at"].(time.Time)),
 		}
 		var organizationDescription *string
-		if event["description"] != nil {
-			text := event["description"].(string)
+		if event["organizer_description"] != nil {
+			text := event["organizer_description"].(string)
 			organizationDescription = &text
 		} else {
 			organizationDescription = nil
@@ -407,15 +409,19 @@ func ListFutureCampusEvents(sortBy pb.SortBy) ([]*pb.ListLatestEventsResponse_Fu
 	return result, nil
 }
 
-func GetApplyInfo(eventId string, userUUID string) (applyInfo string, questions []string, userApplied bool, err error) {
+func GetApplyInfo(eventId string, userUUID string) (applyInfo sql.NullString, questions []string, userApplied bool, err error) {
 	err = dbPool.QueryRow(context.Background(), "SELECT event_apply_info.info, event_apply_info.questions FROM event_apply_info WHERE event_id = $1", eventId).Scan(&applyInfo, &questions)
 	if err != nil {
-		return "", nil, false, err
+		return sql.NullString{
+			Valid: false,
+		}, nil, false, err
 	}
 
 	err = dbPool.QueryRow(context.Background(), "SELECT EXISTS(SELECT 1 FROM event_participants WHERE event_id = $1 AND participant_id = $2)", eventId, userUUID).Scan(&userApplied)
 	if err != nil {
-		return "", nil, false, err
+		return sql.NullString{
+			Valid: false,
+		}, nil, false, err
 	}
 
 	return applyInfo, questions, userApplied, nil
@@ -476,6 +482,18 @@ func ApplyCampusEvent(userUUID string, eventID string, answers map[string]string
 		return err
 	}
 	return nil
+}
+
+func ListUserOrganizerAdmin(userUUID string) ([]*pb.OrganizerInfo, error) {
+	rows, err := dbPool.Query(context.Background(), "SELECT organizer.id, organizer.name, organizer.description FROM organizer_admins LEFT JOIN organizer ON organizer_admins.organizer = organizer.id WHERE admin = $1", userUUID)
+	if err != nil {
+		return nil, err
+	}
+	organizations, err := pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[pb.OrganizerInfo])
+	if err != nil {
+		return nil, err
+	}
+	return organizations, nil
 }
 
 func NewNullString(s string) sql.NullString {

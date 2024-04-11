@@ -453,17 +453,44 @@ func (s *MainService) GetEventApplyInfo(ctx context.Context, request *pb.GetEven
 
 	applyInfo, questions, userApplied, err := models.GetApplyInfo(eventID, userUUID)
 	if err != nil {
+		log.Printf(err.Error())
 		return &pb.GetEventApplyInfoResponse{
 			UserApplied: false,
 		}, nil
 
 	}
+	var info *string
+	if applyInfo.Valid {
+		info = &applyInfo.String
+	}
 	return &pb.GetEventApplyInfoResponse{
 		ApplyInfo: &pb.ApplyInfo{
-			Info:      &applyInfo,
+			Info:      info,
 			Questions: questions,
 		},
 		UserApplied: userApplied,
+	}, nil
+}
+
+func (s *MainService) ListUserOrganizationAdmin(ctx context.Context, _ *emptypb.Empty) (*pb.ListUserOrganizationAdminResponse, error) {
+	jwtClaims := ctx.Value(constants.JWTClaimsKey).(*jwt.UserClaims)
+	userUUID := jwtClaims.Subject
+	if userUUID == "" {
+		log.Printf("empty uuid or error")
+		return nil, status.Errorf(codes.Unauthenticated, "unauthenticated")
+	}
+
+	organizations, err := models.ListUserOrganizerAdmin(userUUID)
+	if err != nil {
+		errorMessage := err.Error()
+		return &pb.ListUserOrganizationAdminResponse{
+			Organizations: nil,
+			ErrorMessage:  &errorMessage,
+		}, nil
+	}
+
+	return &pb.ListUserOrganizationAdminResponse{
+		Organizations: organizations,
 	}, nil
 }
 

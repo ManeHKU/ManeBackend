@@ -20,18 +20,19 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	MainService_GetUpdatedURLs_FullMethodName       = "/service.MainService/GetUpdatedURLs"
-	MainService_UpdateUserInfo_FullMethodName       = "/service.MainService/UpdateUserInfo"
-	MainService_UpsertTakenCourses_FullMethodName   = "/service.MainService/UpsertTakenCourses"
-	MainService_ListCourses_FullMethodName          = "/service.MainService/ListCourses"
-	MainService_SearchCourses_FullMethodName        = "/service.MainService/SearchCourses"
-	MainService_GetCourseDetails_FullMethodName     = "/service.MainService/GetCourseDetails"
-	MainService_AddReview_FullMethodName            = "/service.MainService/AddReview"
-	MainService_ListLatestEvents_FullMethodName     = "/service.MainService/ListLatestEvents"
-	MainService_AddEvent_FullMethodName             = "/service.MainService/AddEvent"
-	MainService_ApplyEvent_FullMethodName           = "/service.MainService/ApplyEvent"
-	MainService_GetEventApplyInfo_FullMethodName    = "/service.MainService/GetEventApplyInfo"
-	MainService_ListUserAppliedEvent_FullMethodName = "/service.MainService/ListUserAppliedEvent"
+	MainService_GetUpdatedURLs_FullMethodName            = "/service.MainService/GetUpdatedURLs"
+	MainService_UpdateUserInfo_FullMethodName            = "/service.MainService/UpdateUserInfo"
+	MainService_UpsertTakenCourses_FullMethodName        = "/service.MainService/UpsertTakenCourses"
+	MainService_ListCourses_FullMethodName               = "/service.MainService/ListCourses"
+	MainService_SearchCourses_FullMethodName             = "/service.MainService/SearchCourses"
+	MainService_GetCourseDetails_FullMethodName          = "/service.MainService/GetCourseDetails"
+	MainService_AddReview_FullMethodName                 = "/service.MainService/AddReview"
+	MainService_ListLatestEvents_FullMethodName          = "/service.MainService/ListLatestEvents"
+	MainService_AddEvent_FullMethodName                  = "/service.MainService/AddEvent"
+	MainService_ApplyEvent_FullMethodName                = "/service.MainService/ApplyEvent"
+	MainService_GetEventApplyInfo_FullMethodName         = "/service.MainService/GetEventApplyInfo"
+	MainService_ListUserAppliedEvent_FullMethodName      = "/service.MainService/ListUserAppliedEvent"
+	MainService_ListUserOrganizationAdmin_FullMethodName = "/service.MainService/ListUserOrganizationAdmin"
 )
 
 // MainServiceClient is the client API for MainService service.
@@ -50,6 +51,7 @@ type MainServiceClient interface {
 	ApplyEvent(ctx context.Context, in *ApplyEventRequest, opts ...grpc.CallOption) (*ApplyEventResponse, error)
 	GetEventApplyInfo(ctx context.Context, in *GetEventApplyInfoRequest, opts ...grpc.CallOption) (*GetEventApplyInfoResponse, error)
 	ListUserAppliedEvent(ctx context.Context, in *ListUserAppliedEventRequest, opts ...grpc.CallOption) (*ListUserAppliedEventResponse, error)
+	ListUserOrganizationAdmin(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListUserOrganizationAdminResponse, error)
 }
 
 type mainServiceClient struct {
@@ -168,6 +170,15 @@ func (c *mainServiceClient) ListUserAppliedEvent(ctx context.Context, in *ListUs
 	return out, nil
 }
 
+func (c *mainServiceClient) ListUserOrganizationAdmin(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListUserOrganizationAdminResponse, error) {
+	out := new(ListUserOrganizationAdminResponse)
+	err := c.cc.Invoke(ctx, MainService_ListUserOrganizationAdmin_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MainServiceServer is the server API for MainService service.
 // All implementations must embed UnimplementedMainServiceServer
 // for forward compatibility
@@ -184,6 +195,7 @@ type MainServiceServer interface {
 	ApplyEvent(context.Context, *ApplyEventRequest) (*ApplyEventResponse, error)
 	GetEventApplyInfo(context.Context, *GetEventApplyInfoRequest) (*GetEventApplyInfoResponse, error)
 	ListUserAppliedEvent(context.Context, *ListUserAppliedEventRequest) (*ListUserAppliedEventResponse, error)
+	ListUserOrganizationAdmin(context.Context, *emptypb.Empty) (*ListUserOrganizationAdminResponse, error)
 	mustEmbedUnimplementedMainServiceServer()
 }
 
@@ -226,6 +238,9 @@ func (UnimplementedMainServiceServer) GetEventApplyInfo(context.Context, *GetEve
 }
 func (UnimplementedMainServiceServer) ListUserAppliedEvent(context.Context, *ListUserAppliedEventRequest) (*ListUserAppliedEventResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListUserAppliedEvent not implemented")
+}
+func (UnimplementedMainServiceServer) ListUserOrganizationAdmin(context.Context, *emptypb.Empty) (*ListUserOrganizationAdminResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListUserOrganizationAdmin not implemented")
 }
 func (UnimplementedMainServiceServer) mustEmbedUnimplementedMainServiceServer() {}
 
@@ -456,6 +471,24 @@ func _MainService_ListUserAppliedEvent_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MainService_ListUserOrganizationAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MainServiceServer).ListUserOrganizationAdmin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MainService_ListUserOrganizationAdmin_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MainServiceServer).ListUserOrganizationAdmin(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MainService_ServiceDesc is the grpc.ServiceDesc for MainService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -510,6 +543,10 @@ var MainService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListUserAppliedEvent",
 			Handler:    _MainService_ListUserAppliedEvent_Handler,
+		},
+		{
+			MethodName: "ListUserOrganizationAdmin",
+			Handler:    _MainService_ListUserOrganizationAdmin_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

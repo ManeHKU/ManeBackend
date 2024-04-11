@@ -1028,6 +1028,61 @@ func (x *GetEventApplyInfoResponse) GetUserApplied() bool {
 	return false
 }
 
+type ListUserOrganizationAdminResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Organizations []*OrganizerInfo `protobuf:"bytes,1,rep,name=organizations,proto3" json:"organizations,omitempty"`
+	ErrorMessage  *string          `protobuf:"bytes,2,opt,name=error_message,json=errorMessage,proto3,oneof" json:"error_message,omitempty"`
+}
+
+func (x *ListUserOrganizationAdminResponse) Reset() {
+	*x = ListUserOrganizationAdminResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_events_proto_msgTypes[14]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListUserOrganizationAdminResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListUserOrganizationAdminResponse) ProtoMessage() {}
+
+func (x *ListUserOrganizationAdminResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_events_proto_msgTypes[14]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListUserOrganizationAdminResponse.ProtoReflect.Descriptor instead.
+func (*ListUserOrganizationAdminResponse) Descriptor() ([]byte, []int) {
+	return file_events_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *ListUserOrganizationAdminResponse) GetOrganizations() []*OrganizerInfo {
+	if x != nil {
+		return x.Organizations
+	}
+	return nil
+}
+
+func (x *ListUserOrganizationAdminResponse) GetErrorMessage() string {
+	if x != nil && x.ErrorMessage != nil {
+		return *x.ErrorMessage
+	}
+	return ""
+}
+
 type ListLatestEventsResponse_FullEventInfo struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1041,7 +1096,7 @@ type ListLatestEventsResponse_FullEventInfo struct {
 func (x *ListLatestEventsResponse_FullEventInfo) Reset() {
 	*x = ListLatestEventsResponse_FullEventInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_events_proto_msgTypes[14]
+		mi := &file_events_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1054,7 +1109,7 @@ func (x *ListLatestEventsResponse_FullEventInfo) String() string {
 func (*ListLatestEventsResponse_FullEventInfo) ProtoMessage() {}
 
 func (x *ListLatestEventsResponse_FullEventInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_events_proto_msgTypes[14]
+	mi := &file_events_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1247,18 +1302,28 @@ var file_events_proto_rawDesc = []byte{
 	0x01, 0x12, 0x21, 0x0a, 0x0c, 0x75, 0x73, 0x65, 0x72, 0x5f, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x65,
 	0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0b, 0x75, 0x73, 0x65, 0x72, 0x41, 0x70, 0x70,
 	0x6c, 0x69, 0x65, 0x64, 0x42, 0x0d, 0x0a, 0x0b, 0x5f, 0x61, 0x70, 0x70, 0x6c, 0x79, 0x5f, 0x69,
-	0x6e, 0x66, 0x6f, 0x2a, 0x34, 0x0a, 0x0b, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x53, 0x74, 0x61, 0x74,
-	0x75, 0x73, 0x12, 0x08, 0x0a, 0x04, 0x4f, 0x50, 0x45, 0x4e, 0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06,
-	0x43, 0x4c, 0x4f, 0x53, 0x45, 0x44, 0x10, 0x01, 0x12, 0x0f, 0x0a, 0x0b, 0x55, 0x4e, 0x41, 0x56,
-	0x41, 0x49, 0x4c, 0x41, 0x42, 0x4c, 0x45, 0x10, 0x02, 0x2a, 0x30, 0x0a, 0x06, 0x53, 0x6f, 0x72,
-	0x74, 0x42, 0x79, 0x12, 0x0e, 0x0a, 0x0a, 0x43, 0x52, 0x45, 0x41, 0x54, 0x45, 0x44, 0x5f, 0x41,
-	0x54, 0x10, 0x00, 0x12, 0x16, 0x0a, 0x12, 0x50, 0x41, 0x52, 0x54, 0x49, 0x43, 0x49, 0x50, 0x41,
-	0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x54, 0x49, 0x4d, 0x45, 0x10, 0x01, 0x2a, 0x3b, 0x0a, 0x16, 0x45,
-	0x76, 0x65, 0x6e, 0x74, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x53,
-	0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x0b, 0x0a, 0x07, 0x41, 0x50, 0x50, 0x4c, 0x49, 0x45, 0x44,
-	0x10, 0x00, 0x12, 0x14, 0x0a, 0x10, 0x52, 0x45, 0x4d, 0x4f, 0x56, 0x45, 0x44, 0x5f, 0x42, 0x59,
-	0x5f, 0x41, 0x44, 0x4d, 0x49, 0x4e, 0x10, 0x01, 0x42, 0x0c, 0x5a, 0x0a, 0x73, 0x65, 0x72, 0x76,
-	0x69, 0x63, 0x65, 0x2f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6e, 0x66, 0x6f, 0x22, 0x9c, 0x01, 0x0a, 0x21, 0x4c, 0x69, 0x73, 0x74, 0x55, 0x73, 0x65, 0x72,
+	0x4f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x41, 0x64, 0x6d, 0x69,
+	0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3b, 0x0a, 0x0d, 0x6f, 0x72, 0x67,
+	0x61, 0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x15, 0x2e, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x73, 0x2e, 0x4f, 0x72, 0x67, 0x61, 0x6e, 0x69,
+	0x7a, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x0d, 0x6f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x28, 0x0a, 0x0d, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x5f,
+	0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52,
+	0x0c, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x88, 0x01, 0x01,
+	0x42, 0x10, 0x0a, 0x0e, 0x5f, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x5f, 0x6d, 0x65, 0x73, 0x73, 0x61,
+	0x67, 0x65, 0x2a, 0x34, 0x0a, 0x0b, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x53, 0x74, 0x61, 0x74, 0x75,
+	0x73, 0x12, 0x08, 0x0a, 0x04, 0x4f, 0x50, 0x45, 0x4e, 0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06, 0x43,
+	0x4c, 0x4f, 0x53, 0x45, 0x44, 0x10, 0x01, 0x12, 0x0f, 0x0a, 0x0b, 0x55, 0x4e, 0x41, 0x56, 0x41,
+	0x49, 0x4c, 0x41, 0x42, 0x4c, 0x45, 0x10, 0x02, 0x2a, 0x30, 0x0a, 0x06, 0x53, 0x6f, 0x72, 0x74,
+	0x42, 0x79, 0x12, 0x0e, 0x0a, 0x0a, 0x43, 0x52, 0x45, 0x41, 0x54, 0x45, 0x44, 0x5f, 0x41, 0x54,
+	0x10, 0x00, 0x12, 0x16, 0x0a, 0x12, 0x50, 0x41, 0x52, 0x54, 0x49, 0x43, 0x49, 0x50, 0x41, 0x54,
+	0x49, 0x4f, 0x4e, 0x5f, 0x54, 0x49, 0x4d, 0x45, 0x10, 0x01, 0x2a, 0x3b, 0x0a, 0x16, 0x45, 0x76,
+	0x65, 0x6e, 0x74, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74,
+	0x61, 0x74, 0x75, 0x73, 0x12, 0x0b, 0x0a, 0x07, 0x41, 0x50, 0x50, 0x4c, 0x49, 0x45, 0x44, 0x10,
+	0x00, 0x12, 0x14, 0x0a, 0x10, 0x52, 0x45, 0x4d, 0x4f, 0x56, 0x45, 0x44, 0x5f, 0x42, 0x59, 0x5f,
+	0x41, 0x44, 0x4d, 0x49, 0x4e, 0x10, 0x01, 0x42, 0x0c, 0x5a, 0x0a, 0x73, 0x65, 0x72, 0x76, 0x69,
+	0x63, 0x65, 0x2f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1274,7 +1339,7 @@ func file_events_proto_rawDescGZIP() []byte {
 }
 
 var file_events_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_events_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
+var file_events_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_events_proto_goTypes = []interface{}{
 	(EventStatus)(0),                               // 0: events.EventStatus
 	(SortBy)(0),                                    // 1: events.SortBy
@@ -1293,34 +1358,36 @@ var file_events_proto_goTypes = []interface{}{
 	(*ListUserAppliedEventResponse)(nil),           // 14: events.ListUserAppliedEventResponse
 	(*GetEventApplyInfoRequest)(nil),               // 15: events.GetEventApplyInfoRequest
 	(*GetEventApplyInfoResponse)(nil),              // 16: events.GetEventApplyInfoResponse
-	(*ListLatestEventsResponse_FullEventInfo)(nil), // 17: events.ListLatestEventsResponse.FullEventInfo
-	nil,                           // 18: events.ApplyEventRequest.AnswersEntry
-	nil,                           // 19: events.ListUserAppliedEventResponse.EventsEntry
-	(*timestamppb.Timestamp)(nil), // 20: google.protobuf.Timestamp
+	(*ListUserOrganizationAdminResponse)(nil),      // 17: events.ListUserOrganizationAdminResponse
+	(*ListLatestEventsResponse_FullEventInfo)(nil), // 18: events.ListLatestEventsResponse.FullEventInfo
+	nil,                           // 19: events.ApplyEventRequest.AnswersEntry
+	nil,                           // 20: events.ListUserAppliedEventResponse.EventsEntry
+	(*timestamppb.Timestamp)(nil), // 21: google.protobuf.Timestamp
 }
 var file_events_proto_depIdxs = []int32{
-	20, // 0: events.EventInfo.start_time:type_name -> google.protobuf.Timestamp
-	20, // 1: events.EventInfo.end_time:type_name -> google.protobuf.Timestamp
+	21, // 0: events.EventInfo.start_time:type_name -> google.protobuf.Timestamp
+	21, // 1: events.EventInfo.end_time:type_name -> google.protobuf.Timestamp
 	0,  // 2: events.EventInfo.status:type_name -> events.EventStatus
-	20, // 3: events.EventInfo.updated_at:type_name -> google.protobuf.Timestamp
+	21, // 3: events.EventInfo.updated_at:type_name -> google.protobuf.Timestamp
 	1,  // 4: events.ListLatestEventsRequest.sort_by:type_name -> events.SortBy
-	17, // 5: events.ListLatestEventsResponse.events:type_name -> events.ListLatestEventsResponse.FullEventInfo
-	20, // 6: events.AddEventRequest.start_time:type_name -> google.protobuf.Timestamp
-	20, // 7: events.AddEventRequest.end_time:type_name -> google.protobuf.Timestamp
+	18, // 5: events.ListLatestEventsResponse.events:type_name -> events.ListLatestEventsResponse.FullEventInfo
+	21, // 6: events.AddEventRequest.start_time:type_name -> google.protobuf.Timestamp
+	21, // 7: events.AddEventRequest.end_time:type_name -> google.protobuf.Timestamp
 	9,  // 8: events.AddEventRequest.apply_info:type_name -> events.ApplyInfo
-	18, // 9: events.ApplyEventRequest.answers:type_name -> events.ApplyEventRequest.AnswersEntry
+	19, // 9: events.ApplyEventRequest.answers:type_name -> events.ApplyEventRequest.AnswersEntry
 	2,  // 10: events.ListUserAppliedEventRequest.filterBy:type_name -> events.EventApplicationStatus
-	19, // 11: events.ListUserAppliedEventResponse.events:type_name -> events.ListUserAppliedEventResponse.EventsEntry
+	20, // 11: events.ListUserAppliedEventResponse.events:type_name -> events.ListUserAppliedEventResponse.EventsEntry
 	9,  // 12: events.GetEventApplyInfoResponse.apply_info:type_name -> events.ApplyInfo
-	3,  // 13: events.ListLatestEventsResponse.FullEventInfo.event:type_name -> events.EventInfo
-	5,  // 14: events.ListLatestEventsResponse.FullEventInfo.organizer:type_name -> events.OrganizerInfo
-	4,  // 15: events.ListLatestEventsResponse.FullEventInfo.participation:type_name -> events.EventParticipation
-	2,  // 16: events.ListUserAppliedEventResponse.EventsEntry.value:type_name -> events.EventApplicationStatus
-	17, // [17:17] is the sub-list for method output_type
-	17, // [17:17] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	5,  // 13: events.ListUserOrganizationAdminResponse.organizations:type_name -> events.OrganizerInfo
+	3,  // 14: events.ListLatestEventsResponse.FullEventInfo.event:type_name -> events.EventInfo
+	5,  // 15: events.ListLatestEventsResponse.FullEventInfo.organizer:type_name -> events.OrganizerInfo
+	4,  // 16: events.ListLatestEventsResponse.FullEventInfo.participation:type_name -> events.EventParticipation
+	2,  // 17: events.ListUserAppliedEventResponse.EventsEntry.value:type_name -> events.EventApplicationStatus
+	18, // [18:18] is the sub-list for method output_type
+	18, // [18:18] is the sub-list for method input_type
+	18, // [18:18] is the sub-list for extension type_name
+	18, // [18:18] is the sub-list for extension extendee
+	0,  // [0:18] is the sub-list for field type_name
 }
 
 func init() { file_events_proto_init() }
@@ -1498,6 +1565,18 @@ func file_events_proto_init() {
 			}
 		}
 		file_events_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListUserOrganizationAdminResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_events_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ListLatestEventsResponse_FullEventInfo); i {
 			case 0:
 				return &v.state
@@ -1519,13 +1598,14 @@ func file_events_proto_init() {
 	file_events_proto_msgTypes[9].OneofWrappers = []interface{}{}
 	file_events_proto_msgTypes[10].OneofWrappers = []interface{}{}
 	file_events_proto_msgTypes[13].OneofWrappers = []interface{}{}
+	file_events_proto_msgTypes[14].OneofWrappers = []interface{}{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_events_proto_rawDesc,
 			NumEnums:      3,
-			NumMessages:   17,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

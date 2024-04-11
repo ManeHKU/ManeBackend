@@ -640,7 +640,7 @@ var file_main_service_proto_rawDesc = []byte{
 	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76,
 	0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75,
 	0x65, 0x3a, 0x02, 0x38, 0x01, 0x42, 0x0d, 0x0a, 0x0b, 0x5f, 0x6c, 0x61, 0x74, 0x65, 0x73, 0x74,
-	0x55, 0x52, 0x4c, 0x73, 0x32, 0xbe, 0x07, 0x0a, 0x0b, 0x4d, 0x61, 0x69, 0x6e, 0x53, 0x65, 0x72,
+	0x55, 0x52, 0x4c, 0x73, 0x32, 0x9e, 0x08, 0x0a, 0x0b, 0x4d, 0x61, 0x69, 0x6e, 0x53, 0x65, 0x72,
 	0x76, 0x69, 0x63, 0x65, 0x12, 0x51, 0x0a, 0x0e, 0x47, 0x65, 0x74, 0x55, 0x70, 0x64, 0x61, 0x74,
 	0x65, 0x64, 0x55, 0x52, 0x4c, 0x73, 0x12, 0x1e, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
 	0x2e, 0x47, 0x65, 0x74, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x55, 0x52, 0x4c, 0x73, 0x52,
@@ -700,6 +700,12 @@ var file_main_service_proto_rawDesc = []byte{
 	0x69, 0x65, 0x64, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
 	0x24, 0x2e, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x55, 0x73, 0x65,
 	0x72, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x65, 0x64, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x5e, 0x0a, 0x19, 0x4c, 0x69, 0x73, 0x74, 0x55, 0x73, 0x65,
+	0x72, 0x4f, 0x72, 0x67, 0x61, 0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x41, 0x64, 0x6d,
+	0x69, 0x6e, 0x12, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x1a, 0x29, 0x2e, 0x65, 0x76, 0x65,
+	0x6e, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x55, 0x73, 0x65, 0x72, 0x4f, 0x72, 0x67, 0x61,
+	0x6e, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x52, 0x65, 0x73,
 	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x0c, 0x5a, 0x0a, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
 	0x2f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
@@ -718,34 +724,35 @@ func file_main_service_proto_rawDescGZIP() []byte {
 
 var file_main_service_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_main_service_proto_goTypes = []interface{}{
-	(*ListCoursesRequest)(nil),              // 0: service.ListCoursesRequest
-	(*SearchCourseRequest)(nil),             // 1: service.SearchCourseRequest
-	(*CoursesResponse)(nil),                 // 2: service.CoursesResponse
-	(*GetCourseDetailRequest)(nil),          // 3: service.GetCourseDetailRequest
-	(*GetCourseDetailResponse)(nil),         // 4: service.GetCourseDetailResponse
-	(*UpsertTakenCoursesRequest)(nil),       // 5: service.UpsertTakenCoursesRequest
-	(*UpdateUserInfoRequest)(nil),           // 6: service.UpdateUserInfoRequest
-	(*GetUpdatedURLsRequest)(nil),           // 7: service.GetUpdatedURLsRequest
-	(*GetUpdatedURLsResponse)(nil),          // 8: service.GetUpdatedURLsResponse
-	(*GetUpdatedURLsResponse_URLsList)(nil), // 9: service.GetUpdatedURLsResponse.URLsList
-	nil,                                     // 10: service.GetUpdatedURLsResponse.URLsList.URLsEntry
-	(*Course)(nil),                          // 11: courses.Course
-	(*Review)(nil),                          // 12: reviews.Review
-	(*AddReviewMeta)(nil),                   // 13: reviews.AddReviewMeta
-	(*timestamppb.Timestamp)(nil),           // 14: google.protobuf.Timestamp
-	(*AddReviewRequest)(nil),                // 15: reviews.AddReviewRequest
-	(*ListLatestEventsRequest)(nil),         // 16: events.ListLatestEventsRequest
-	(*AddEventRequest)(nil),                 // 17: events.AddEventRequest
-	(*ApplyEventRequest)(nil),               // 18: events.ApplyEventRequest
-	(*GetEventApplyInfoRequest)(nil),        // 19: events.GetEventApplyInfoRequest
-	(*ListUserAppliedEventRequest)(nil),     // 20: events.ListUserAppliedEventRequest
-	(*emptypb.Empty)(nil),                   // 21: google.protobuf.Empty
-	(*AddReviewResponse)(nil),               // 22: reviews.AddReviewResponse
-	(*ListLatestEventsResponse)(nil),        // 23: events.ListLatestEventsResponse
-	(*AddEventResponse)(nil),                // 24: events.AddEventResponse
-	(*ApplyEventResponse)(nil),              // 25: events.ApplyEventResponse
-	(*GetEventApplyInfoResponse)(nil),       // 26: events.GetEventApplyInfoResponse
-	(*ListUserAppliedEventResponse)(nil),    // 27: events.ListUserAppliedEventResponse
+	(*ListCoursesRequest)(nil),                // 0: service.ListCoursesRequest
+	(*SearchCourseRequest)(nil),               // 1: service.SearchCourseRequest
+	(*CoursesResponse)(nil),                   // 2: service.CoursesResponse
+	(*GetCourseDetailRequest)(nil),            // 3: service.GetCourseDetailRequest
+	(*GetCourseDetailResponse)(nil),           // 4: service.GetCourseDetailResponse
+	(*UpsertTakenCoursesRequest)(nil),         // 5: service.UpsertTakenCoursesRequest
+	(*UpdateUserInfoRequest)(nil),             // 6: service.UpdateUserInfoRequest
+	(*GetUpdatedURLsRequest)(nil),             // 7: service.GetUpdatedURLsRequest
+	(*GetUpdatedURLsResponse)(nil),            // 8: service.GetUpdatedURLsResponse
+	(*GetUpdatedURLsResponse_URLsList)(nil),   // 9: service.GetUpdatedURLsResponse.URLsList
+	nil,                                       // 10: service.GetUpdatedURLsResponse.URLsList.URLsEntry
+	(*Course)(nil),                            // 11: courses.Course
+	(*Review)(nil),                            // 12: reviews.Review
+	(*AddReviewMeta)(nil),                     // 13: reviews.AddReviewMeta
+	(*timestamppb.Timestamp)(nil),             // 14: google.protobuf.Timestamp
+	(*AddReviewRequest)(nil),                  // 15: reviews.AddReviewRequest
+	(*ListLatestEventsRequest)(nil),           // 16: events.ListLatestEventsRequest
+	(*AddEventRequest)(nil),                   // 17: events.AddEventRequest
+	(*ApplyEventRequest)(nil),                 // 18: events.ApplyEventRequest
+	(*GetEventApplyInfoRequest)(nil),          // 19: events.GetEventApplyInfoRequest
+	(*ListUserAppliedEventRequest)(nil),       // 20: events.ListUserAppliedEventRequest
+	(*emptypb.Empty)(nil),                     // 21: google.protobuf.Empty
+	(*AddReviewResponse)(nil),                 // 22: reviews.AddReviewResponse
+	(*ListLatestEventsResponse)(nil),          // 23: events.ListLatestEventsResponse
+	(*AddEventResponse)(nil),                  // 24: events.AddEventResponse
+	(*ApplyEventResponse)(nil),                // 25: events.ApplyEventResponse
+	(*GetEventApplyInfoResponse)(nil),         // 26: events.GetEventApplyInfoResponse
+	(*ListUserAppliedEventResponse)(nil),      // 27: events.ListUserAppliedEventResponse
+	(*ListUserOrganizationAdminResponse)(nil), // 28: events.ListUserOrganizationAdminResponse
 }
 var file_main_service_proto_depIdxs = []int32{
 	11, // 0: service.CoursesResponse.courses:type_name -> courses.Course
@@ -768,20 +775,22 @@ var file_main_service_proto_depIdxs = []int32{
 	18, // 17: service.MainService.ApplyEvent:input_type -> events.ApplyEventRequest
 	19, // 18: service.MainService.GetEventApplyInfo:input_type -> events.GetEventApplyInfoRequest
 	20, // 19: service.MainService.ListUserAppliedEvent:input_type -> events.ListUserAppliedEventRequest
-	8,  // 20: service.MainService.GetUpdatedURLs:output_type -> service.GetUpdatedURLsResponse
-	21, // 21: service.MainService.UpdateUserInfo:output_type -> google.protobuf.Empty
-	21, // 22: service.MainService.UpsertTakenCourses:output_type -> google.protobuf.Empty
-	2,  // 23: service.MainService.ListCourses:output_type -> service.CoursesResponse
-	2,  // 24: service.MainService.SearchCourses:output_type -> service.CoursesResponse
-	4,  // 25: service.MainService.GetCourseDetails:output_type -> service.GetCourseDetailResponse
-	22, // 26: service.MainService.AddReview:output_type -> reviews.AddReviewResponse
-	23, // 27: service.MainService.ListLatestEvents:output_type -> events.ListLatestEventsResponse
-	24, // 28: service.MainService.AddEvent:output_type -> events.AddEventResponse
-	25, // 29: service.MainService.ApplyEvent:output_type -> events.ApplyEventResponse
-	26, // 30: service.MainService.GetEventApplyInfo:output_type -> events.GetEventApplyInfoResponse
-	27, // 31: service.MainService.ListUserAppliedEvent:output_type -> events.ListUserAppliedEventResponse
-	20, // [20:32] is the sub-list for method output_type
-	8,  // [8:20] is the sub-list for method input_type
+	21, // 20: service.MainService.ListUserOrganizationAdmin:input_type -> google.protobuf.Empty
+	8,  // 21: service.MainService.GetUpdatedURLs:output_type -> service.GetUpdatedURLsResponse
+	21, // 22: service.MainService.UpdateUserInfo:output_type -> google.protobuf.Empty
+	21, // 23: service.MainService.UpsertTakenCourses:output_type -> google.protobuf.Empty
+	2,  // 24: service.MainService.ListCourses:output_type -> service.CoursesResponse
+	2,  // 25: service.MainService.SearchCourses:output_type -> service.CoursesResponse
+	4,  // 26: service.MainService.GetCourseDetails:output_type -> service.GetCourseDetailResponse
+	22, // 27: service.MainService.AddReview:output_type -> reviews.AddReviewResponse
+	23, // 28: service.MainService.ListLatestEvents:output_type -> events.ListLatestEventsResponse
+	24, // 29: service.MainService.AddEvent:output_type -> events.AddEventResponse
+	25, // 30: service.MainService.ApplyEvent:output_type -> events.ApplyEventResponse
+	26, // 31: service.MainService.GetEventApplyInfo:output_type -> events.GetEventApplyInfoResponse
+	27, // 32: service.MainService.ListUserAppliedEvent:output_type -> events.ListUserAppliedEventResponse
+	28, // 33: service.MainService.ListUserOrganizationAdmin:output_type -> events.ListUserOrganizationAdminResponse
+	21, // [21:34] is the sub-list for method output_type
+	8,  // [8:21] is the sub-list for method input_type
 	8,  // [8:8] is the sub-list for extension type_name
 	8,  // [8:8] is the sub-list for extension extendee
 	0,  // [0:8] is the sub-list for field type_name
