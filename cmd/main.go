@@ -72,14 +72,9 @@ func main() {
 	initService := service.NewInitService(browser)
 	interceptor := service.NewAuthInterceptor(jwtManager)
 
-	var s *grpc.Server
-	if config.MACHINE_NAME != "LOCAL" {
-		s = grpc.NewServer(
-			grpc.UnaryInterceptor(interceptor.Unary()),
-			grpc.StreamInterceptor(interceptor.Stream()))
-	} else {
-		s = grpc.NewServer()
-	}
+	s := grpc.NewServer(
+		grpc.UnaryInterceptor(interceptor.Unary()),
+		grpc.StreamInterceptor(interceptor.Stream()))
 
 	pb.RegisterMainServiceServer(s, mainService)
 	pb.RegisterHealthCheckServer(s, &HealthCheck{})
