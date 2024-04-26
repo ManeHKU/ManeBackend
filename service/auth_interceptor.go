@@ -69,7 +69,7 @@ func (interceptor *AuthInterceptor) authorize(ctx context.Context, method string
 
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return ctx, status.Errorf(codes.Unauthenticated, "md is not provided")
+		return ctx, status.Errorf(codes.Unauthenticated, "metadata is not provided")
 	}
 
 	values := md["authorization"]
